@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/img/icon-192.png">
+
+  <meta name="theme-color" content="#0091ff">
+  <title>Login - Koperasi Arfa Sejahtera</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;}
+body{font-family:'Poppins',sans-serif;background:linear-gradient(to right,#1e90ff,#0f3057);display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#fff;} /* TEKS PUTIH */
+
+.box{background:transparent;padding:0;border-radius:0;width:100%;max-width:380px;box-shadow:none;} /* HAPUS KOTAK PUTIH */
+.box img{width:90px;height:90px;margin:0 auto 15px;display:block;border-radius:50%;object-fit:contain;background:rgba(255,255,255,0.15);padding:10px;border:2px solid rgba(255,255,255,0.3);} /* LOGO LINGKARAN */
+.box h2{text-align:center;color:#fff;margin:0 0 20px;font-size:20px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.3);} /* JUDUL PUTIH */
+
+.form-group{margin-bottom:14px;}
+.form-group label{font-size:12px;font-weight:600;color:#e0f2ff;display:block;margin-bottom:6px;} /* LABEL PUTIH BIRU */
+.form-group input, .form-group select{width:100%;padding:11px;border:1px solid rgba(255,255,255,0.3);border-radius:10px;font-family:'Poppins';font-size:14px;background:rgba(255,255,255,0.15);color:#fff;backdrop-filter:blur(5px);} /* INPUT TRANSPARAN */
+.form-group input::placeholder{color:rgba(255,255,255,0.7);} /* PLACEHOLDER PUTIH */
+.form-group input:focus, .form-group select:focus{outline:none;border-color:#fff;background:rgba(255,255,255,0.25);}
+
+.btn{width:100%;padding:12px;border:none;border-radius:10px;background:#fff;color:#0f3057;font-weight:700;cursor:pointer;margin-top:8px;font-size:15px;transition:0.2s;} /* TOMBOL PUTIH */
+.btn:hover{background:#e0f2ff;transform:translateY(-2px);}
+
+.tabs{display:flex;margin-bottom:20px;background:rgba(255,255,255,0.1);border-radius:10px;padding:4px;} /* TABS TRANSPARAN */
+.tabs button{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;font-weight:600;color:rgba(255,255,255,0.7);font-size:13px;border-radius:8px;transition:0.2s;}
+.tabs button.active{color:#0f3057;background:#fff;} /* TAB AKTIF PUTIH */
+
+.note{font-size:11px;color:#fff;background:rgba(255,193,7,0.2);padding:10px;border-radius:8px;margin-top:12px;border:1px solid rgba(255,193,7,0.3);} /* NOTE TRANSPARAN */
+</style>
+</head>
+<body>
+
+<div class="box">
+  <img src="img/icon-192.png">
+  <h2>Koperasi Arfa Sejahtera</h2>
+
+  <div class="tabs">
+    <button id="tabLogin" class="active" onclick="showTab('login')">Login</button>
+    <button id="tabDaftar" onclick="showTab('daftar')">Daftar</button>
+    <button id="tabLupa" onclick="showTab('lupa')">Lupa Pass</button>
+  </div>
+
+  <div id="formLogin">
+    <div class="form-group"><label>Username</label><input type="text" id="loginUser" placeholder="Username"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Password"></div>
+    <button class="btn" onclick="login()">Masuk</button>
+  </div>
+
+  <div id="formDaftar" style="display:none;">
+    <div class="form-group"><label>Pilih Nama Anda</label><select id="daftarAnggota"><option>Loading...</option></select></div>
+    <div class="form-group"><label>Buat Username</label><input type="text" id="daftarUser" placeholder="Contoh: budi01"></div>
+    <div class="form-group"><label>Buat Password</label><input type="password" id="daftarPass" placeholder="Minimal 6 karakter"></div>
+    <button class="btn" onclick="daftar()">Daftar Akun</button>
+    <div class="note">* Hanya anggota yang terdaftar di admin yang bisa daftar</div>
+  </div>
+
+  <div id="formLupa" style="display:none;">
+    <div class="form-group"><label>Pilih Nama Anda</label><select id="lupaAnggota"><option>Loading...</option></select></div>
+    <div class="form-group"><label>Username</label><input type="text" id="lupaUser" placeholder="Username yang terdaftar"></div>
+    <div class="form-group"><label>Password Baru</label><input type="password" id="lupaPass" placeholder="Password baru"></div>
+    <button class="btn" onclick="resetPassword()">Reset Password</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {apiKey:"AIzaSyDd0s73-qW2uiOlBWR-afybFZzMafCHeSo",authDomain:"arfa-c7dee.firebaseapp.com",databaseURL:"https://arfa-c7dee-default-rtdb.firebaseio.com",projectId:"arfa-c7dee"};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.showTab = function(tab){
+  ['login','daftar','lupa'].forEach(t=>{
+    document.getElementById('form'+t.charAt(0).toUpperCase()+t.slice(1)).style.display = t===tab?'block':'none';
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+  })
+}
+
+/* LOAD DATA ANGGOTA - FIX: YANG GAK ADA STATUS DIANGGAP AKTIF */
+async function loadAnggota(){
+  const snap = await get(ref(db,"/anggota"));
+  let options = '<option value="">-- Pilih dari Data Anggota --</option>';
+  
+  if(snap.exists()){
+    snap.forEach(child=>{
+      const a = child.val();
+      const id = a.id;
+      const nama = a.nama;
+      const status = String(a.status || 'aktif').toLowerCase(); // <-- KUNCI: kalau kosong = aktif
+      
+      if(status !== 'keluar'){ // tampilkan semua kecuali yang status keluar
+        options += `<option value="${id}">${id} - ${nama}</option>`;
+      }
+    });
+  }
+  
+  document.getElementById('daftarAnggota').innerHTML = options;
+  document.getElementById('lupaAnggota').innerHTML = options;
+}
+loadAnggota();
+
+/* LOGIN */
+window.login = async function(){
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
+  if(!username || !password){ alert("Username dan Password wajib diisi"); return; }
+
+  const snap = await get(ref(db,"/users"));
+  let ketemu = null;
+  snap.forEach(child=>{
+    const u = child.val();
+    if(u.username === username && u.password === password) ketemu = u;
+  });
+
+  if(ketemu){
+    localStorage.setItem('login', 'true');
+    localStorage.setItem('username', ketemu.username);
+    localStorage.setItem('role', ketemu.role);
+    localStorage.setItem('userId', ketemu.userId);
+    location.href = 'dashboard.html';
+  } else { alert("Username atau Password salah"); }
+}
+
+/* DAFTAR */
+window.daftar = async function(){
+  const userId = document.getElementById('daftarAnggota').value;
+  const username = document.getElementById('daftarUser').value.trim();
+  const password = document.getElementById('daftarPass').value.trim();
+  if(!userId){ alert("Pilih nama Anda dulu"); return; }
+  if(!username){ alert("Buat username dulu"); return; }
+  if(password.length < 6){ alert("Password minimal 6 karakter"); return; }
+
+  const snap = await get(ref(db,"/users"));
+  let ada = false, adaAkun = false;
+  snap.forEach(c=>{ 
+    if(c.val().username === username) ada=true; 
+    if(c.val().userId === userId) adaAkun=true;
+  });
+  if(ada){ alert("Username sudah digunakan"); return; }
+  if(adaAkun){ alert("Anggota ini sudah punya akun"); return; }
+
+  await push(ref(db,"/users"), {username, password, role:'anggota', userId});
+  alert("Pendaftaran berhasil. Silakan login");
+  showTab('login');
+}
+
+/* LUPA PASSWORD */
+window.resetPassword = async function(){
+  const userId = document.getElementById('lupaAnggota').value;
+  const username = document.getElementById('lupaUser').value.trim();
+  const passwordBaru = document.getElementById('lupaPass').value.trim();
+  if(!userId || !username || !passwordBaru){ alert("Semua field wajib diisi"); return; }
+
+  const snap = await get(ref(db,"/users"));
+  let ketemuKey = null;
+  snap.forEach(child=>{
+    const u = child.val();
+    if(u.userId === userId && u.username === username) ketemuKey = child.key;
+  });
+
+  if(ketemuKey){
+    await update(ref(db,"/users/" + ketemuKey), {password: passwordBaru});
+    alert("Password berhasil direset");
+    showTab('login');
+  } else { alert("Data tidak cocok"); }
+}
+</script>
+</body>
+</html>
