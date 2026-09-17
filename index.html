@@ -806,20 +806,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 
-const role =
-  (localStorage.getItem("role") || "").toLowerCase();
 
-const username =
-  localStorage.getItem("username") || "Admin";
-
-
-if(role !== "admin"){
-
-  alert("Hanya Admin");
-
-  window.location = "dashboard.html";
-
-}
 
 
 let dataArisan = {};
