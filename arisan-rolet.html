@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Rolet Arisan - Koperasi ARFA</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+}
+
+body{
+  font-family:'Poppins',sans-serif;
+  background:
+    radial-gradient(circle at top,#dbeafe 0%,#eff6ff 35%,#f8fafc 100%);
+  color:#0f172a;
+  overflow-x:hidden;
+}
+
+.container{
+  width:100%;
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.title{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.title h1{
+  margin:0;
+  font-size:25px;
+  font-weight:800;
+  color:#1d4ed8;
+}
+
+.title p{
+  margin:6px 0 0;
+  color:#64748b;
+  font-size:13px;
+}
+
+.rolet-card{
+  background:rgba(255,255,255,.96);
+  border-radius:28px;
+  padding:25px 20px;
+  box-shadow:
+    0 20px 60px rgba(15,23,42,.12);
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.rolet-card::before{
+  content:"";
+  position:absolute;
+  width:300px;
+  height:300px;
+  border-radius:50%;
+  background:rgba(37,99,235,.06);
+  top:-160px;
+  left:-120px;
+}
+
+.rolet-card::after{
+  content:"";
+  position:absolute;
+  width:250px;
+  height:250px;
+  border-radius:50%;
+  background:rgba(59,130,246,.05);
+  bottom:-130px;
+  right:-100px;
+}
+
+.info{
+  position:relative;
+  z-index:2;
+}
+
+.nama-arisan{
+  font-size:18px;
+  font-weight:800;
+  color:#1e3a8a;
+}
+
+.putaran{
+  display:inline-block;
+  margin-top:8px;
+  padding:6px 14px;
+  border-radius:999px;
+  background:#eff6ff;
+  color:#2563eb;
+  font-size:12px;
+  font-weight:700;
+}
+
+.area-kocok{
+  position:relative;
+  z-index:2;
+  margin-top:35px;
+}
+
+.rolet-box{
+  min-height:190px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  border-radius:25px;
+  background:
+    linear-gradient(
+      135deg,
+      #1d4ed8,
+      #2563eb,
+      #3b82f6
+    );
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,.18),
+    0 18px 40px rgba(37,99,235,.28);
+}
+
+.nama-rolet{
+  color:white;
+  font-size:clamp(24px,7vw,45px);
+  font-weight:800;
+  line-height:1.2;
+  word-break:break-word;
+  text-shadow:0 3px 10px rgba(0,0,0,.2);
+}
+
+.rolet-box.berputar{
+  animation:pulseBox .45s infinite alternate;
+}
+
+@keyframes pulseBox{
+  from{
+    transform:scale(1);
+  }
+  to{
+    transform:scale(1.025);
+  }
+}
+
+.status{
+  margin-top:16px;
+  min-height:24px;
+  color:#64748b;
+  font-size:13px;
+  font-weight:500;
+}
+
+.sound-area{
+  position:relative;
+  z-index:3;
+  margin-top:20px;
+}
+
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:13px 20px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn:active{
+  transform:scale(.97);
+}
+
+.btn-sound{
+  background:#2563eb;
+  color:white;
+  box-shadow:0 8px 22px rgba(37,99,235,.25);
+}
+
+.btn-sound:hover{
+  background:#1d4ed8;
+}
+
+.btn-sound.active{
+  background:#16a34a;
+  cursor:default;
+}
+
+.btn-sound:disabled{
+  opacity:1;
+}
+
+.winner{
+  position:relative;
+  z-index:3;
+  display:none;
+  margin-top:20px;
+}
+
+.winner.show{
+  display:block;
+  animation:winnerIn .7s ease;
+}
+
+@keyframes winnerIn{
+  0%{
+    opacity:0;
+    transform:scale(.6);
+  }
+
+  70%{
+    transform:scale(1.06);
+  }
+
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+.winner-icon{
+  font-size:55px;
+  margin-bottom:5px;
+}
+
+.winner-label{
+  color:#64748b;
+  font-size:13px;
+  font-weight:600;
+}
+
+.nama-pemenang{
+  margin-top:5px;
+  color:#16a34a;
+  font-size:clamp(24px,7vw,38px);
+  font-weight:800;
+  line-height:1.2;
+}
+
+.nominal{
+  margin-top:15px;
+  padding:18px;
+  border-radius:20px;
+  background:#f0fdf4;
+  border:1px solid #bbf7d0;
+}
+
+.nominal-label{
+  font-size:12px;
+  color:#64748b;
+}
+
+.nominal-value{
+  margin-top:3px;
+  font-size:30px;
+  font-weight:800;
+  color:#15803d;
+}
+
+.detail-uang{
+  margin-top:10px;
+  color:#64748b;
+  font-size:12px;
+  line-height:1.7;
+}
+
+.action{
+  margin-top:18px;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn-wa{
+  background:#16a34a;
+  color:white;
+}
+
+.btn-print{
+  background:#0f172a;
+  color:white;
+}
+
+.btn-close{
+  background:#64748b;
+  color:white;
+}
+
+.error{
+  position:relative;
+  z-index:4;
+  display:none;
+  margin-top:20px;
+  padding:18px;
+  border-radius:18px;
+  background:#fef2f2;
+  border:1px solid #fecaca;
+  color:#b91c1c;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.loading{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(5px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.loading-box{
+  text-align:center;
+}
+
+.spinner{
+  width:45px;
+  height:45px;
+  border:4px solid #dbeafe;
+  border-top-color:#2563eb;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+.loading-text{
+  margin-top:12px;
+  font-size:13px;
+  color:#64748b;
+}
+
+.hidden{
+  display:none!important;
+}
+
+@media(max-width:480px){
+
+  .container{
+    padding:12px;
+  }
+
+  .rolet-card{
+    padding:20px 14px;
+    border-radius:22px;
+  }
+
+  .rolet-box{
+    min-height:170px;
+  }
+
+  .title h1{
+    font-size:22px;
+  }
+
+  .nominal-value{
+    font-size:26px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loading" class="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-text">
+      Memuat data arisan...
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="title">
+
+    <h1>🎰 ROLET ARISAN</h1>
+
+    <p>
+      Koperasi ARFA
+    </p>
+
+  </div>
+
+  <div class="rolet-card">
+
+    <div class="info">
+
+      <div id="namaArisan"
+           class="nama-arisan">
+        -
+      </div>
+
+      <div id="putaran"
+           class="putaran">
+        Putaran -
+      </div>
+
+    </div>
+
+    <div id="areaKocok"
+         class="area-kocok">
+
+      <div id="roletBox"
+           class="rolet-box">
+
+        <div id="nama"
+             class="nama-rolet">
+          Siap...
+        </div>
+
+      </div>
+
+      <div id="status"
+           class="status">
+        Tekan tombol suara untuk memulai rolet.
+      </div>
+
+    </div>
+
+    <!-- Tombol harus ditekan user agar browser mengizinkan audio -->
+    <div class="sound-area">
+
+      <button id="btnSound"
+              class="btn btn-sound">
+
+        🔊 Aktifkan Suara & Mulai Rolet
+
+      </button>
+
+    </div>
+
+    <div id="winner"
+         class="winner">
+
+      <div class="winner-icon">
+        🏆
+      </div>
+
+      <div class="winner-label">
+        PEMENANG ARISAN
+      </div>
+
+      <div id="namaPemenang"
+           class="nama-pemenang">
+        -
+      </div>
+
+      <div class="nominal">
+
+        <div class="nominal-label">
+          Uang yang diterima
+        </div>
+
+        <div id="nominal"
+             class="nominal-value">
+          Rp 0
+        </div>
+
+        <div id="detailUang"
+             class="detail-uang">
+        </div>
+
+      </div>
+
+      <div class="action">
+
+        <button id="btnWA"
+                class="btn btn-wa">
+          📱 Kirim WhatsApp
+        </button>
+
+        <button id="btnPrint"
+                class="btn btn-print">
+          🧾 Cetak Nota
+        </button>
+
+        <button class="btn btn-close"
+                onclick="window.close()">
+          ✕ Tutup
+        </button>
+
+      </div>
+
+    </div>
+
+    <div id="error"
+         class="error">
+    </div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  update,
+  push
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyDd0s73-qW2uiOlBWR-afybFZzMafCHeSo",
+
+  authDomain:
+    "arfa-c7dee.firebaseapp.com",
+
+  databaseURL:
+    "https://arfa-c7dee-default-rtdb.firebaseio.com",
+
+  projectId:
+    "arfa-c7dee"
+
+};
+
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getDatabase(app);
+
+
+/* =========================================================
+   PARAMETER
+========================================================= */
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const arisanId =
+  params.get("id");
+
+
+/* =========================================================
+   VARIABEL
+========================================================= */
+
+let dataArisan = null;
+
+let periode = 1;
+
+let pemenangId = null;
+
+let pemenang = null;
+
+let totalKas = 0;
+
+let jasa = 0;
+
+let diterima = 0;
+
+let daftarKocok = [];
+
+let audioCtx = null;
+
+let drumTimer = null;
+
+let roletSedangBerjalan = false;
+
+
+/* =========================================================
+   ELEMENT
+========================================================= */
+
+const loadingEl =
+  document.getElementById("loading");
+
+const namaArisanEl =
+  document.getElementById("namaArisan");
+
+const putaranEl =
+  document.getElementById("putaran");
+
+const namaEl =
+  document.getElementById("nama");
+
+const winnerEl =
+  document.getElementById("winner");
+
+const namaPemenangEl =
+  document.getElementById("namaPemenang");
+
+const nominalEl =
+  document.getElementById("nominal");
+
+const detailUangEl =
+  document.getElementById("detailUang");
+
+const statusEl =
+  document.getElementById("status");
+
+const areaKocokEl =
+  document.getElementById("areaKocok");
+
+const roletBoxEl =
+  document.getElementById("roletBox");
+
+const errorEl =
+  document.getElementById("error");
+
+const btnWA =
+  document.getElementById("btnWA");
+
+const btnPrint =
+  document.getElementById("btnPrint");
+
+const btnSound =
+  document.getElementById("btnSound");
+
+
+/* =========================================================
+   FORMAT RUPIAH
+========================================================= */
+
+function rupiah(angka){
+
+  return new Intl.NumberFormat(
+    "id-ID",
+    {
+      style:"currency",
+      currency:"IDR",
+      maximumFractionDigits:0
+    }
+  ).format(
+    Number(angka) || 0
+  );
+
+}
+
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+function initAudio(){
+
+  try{
+
+    if(!audioCtx){
+
+      audioCtx =
+        new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "Audio tidak tersedia:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   TEST SOUND
+========================================================= */
+
+function playTestSound(){
+
+  if(!audioCtx) return;
+
+  try{
+
+    const osc =
+      audioCtx.createOscillator();
+
+    const gain =
+      audioCtx.createGain();
+
+    osc.type = "sine";
+
+    osc.frequency.setValueAtTime(
+      700,
+      audioCtx.currentTime
+    );
+
+    osc.frequency.exponentialRampToValueAtTime(
+      1000,
+      audioCtx.currentTime + .12
+    );
+
+    gain.gain.setValueAtTime(
+      .001,
+      audioCtx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .15,
+      audioCtx.currentTime + .02
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .001,
+      audioCtx.currentTime + .18
+    );
+
+    osc.connect(gain);
+
+    gain.connect(
+      audioCtx.destination
+    );
+
+    osc.start();
+
+    osc.stop(
+      audioCtx.currentTime + .2
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* =========================================================
+   SUARA ROLET
+========================================================= */
+
+function playDrum(){
+
+  initAudio();
+
+  if(!audioCtx) return;
+
+  if(audioCtx.state === "suspended"){
+
+    audioCtx.resume();
+
+  }
+
+  if(drumTimer){
+
+    clearInterval(
+      drumTimer
+    );
+
+    drumTimer = null;
+
+  }
+
+  const mulai =
+    Date.now();
+
+  const durasi =
+    15000;
+
+  drumTimer =
+    setInterval(()=>{
+
+      const elapsed =
+        Date.now() - mulai;
+
+      if(elapsed >= durasi){
+
+        clearInterval(
+          drumTimer
+        );
+
+        drumTimer = null;
+
+        return;
+
+      }
+
+      try{
+
+        const osc =
+          audioCtx.createOscillator();
+
+        const gain =
+          audioCtx.createGain();
+
+        osc.type = "square";
+
+        /*
+          Semakin mendekati akhir,
+          suara sedikit lebih rendah.
+        */
+
+        let freq =
+          180 + Math.random() * 260;
+
+        if(elapsed > 12000){
+
+          freq =
+            130 + Math.random() * 180;
+
+        }
+
+        osc.frequency.setValueAtTime(
+          freq,
+          audioCtx.currentTime
+        );
+
+        gain.gain.setValueAtTime(
+          .08,
+          audioCtx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          .001,
+          audioCtx.currentTime + .065
+        );
+
+        osc.connect(gain);
+
+        gain.connect(
+          audioCtx.destination
+        );
+
+        osc.start();
+
+        osc.stop(
+          audioCtx.currentTime + .07
+        );
+
+      }catch(error){}
+
+    },110);
+
+}
+
+
+/* =========================================================
+   SUARA PEMENANG
+========================================================= */
+
+function playMenang(){
+
+  initAudio();
+
+  if(!audioCtx) return;
+
+  if(audioCtx.state === "suspended"){
+
+    audioCtx.resume();
+
+  }
+
+  const nada = [
+    523.25,
+    659.25,
+    783.99,
+    1046.50
+  ];
+
+  nada.forEach(
+    (freq,index)=>{
+
+      setTimeout(()=>{
+
+        try{
+
+          const osc =
+            audioCtx.createOscillator();
+
+          const gain =
+            audioCtx.createGain();
+
+          osc.type = "sine";
+
+          osc.frequency.value =
+            freq;
+
+          gain.gain.setValueAtTime(
+            .001,
+            audioCtx.currentTime
+          );
+
+          gain.gain.exponentialRampToValueAtTime(
+            .20,
+            audioCtx.currentTime + .03
+          );
+
+          gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioCtx.currentTime + .35
+          );
+
+          osc.connect(gain);
+
+          gain.connect(
+            audioCtx.destination
+          );
+
+          osc.start();
+
+          osc.stop(
+            audioCtx.currentTime + .4
+          );
+
+        }catch(error){}
+
+      },index * 180);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LOAD DATA ARISAN
+========================================================= */
+
+async function loadArisan(){
+
+  if(!arisanId){
+
+    throw new Error(
+      "ID arisan tidak ditemukan."
+    );
+
+  }
+
+  const snap =
+    await get(
+      ref(
+        db,
+        `/arisan/${arisanId}`
+      )
+    );
+
+  if(!snap.exists()){
+
+    throw new Error(
+      "Data arisan tidak ditemukan."
+    );
+
+  }
+
+  dataArisan =
+    snap.val();
+
+  if(
+    dataArisan.status &&
+    dataArisan.status === "selesai"
+  ){
+
+    throw new Error(
+      "Arisan ini sudah selesai."
+    );
+
+  }
+
+  periode =
+    Number(
+      dataArisan.periodeSekarang
+    ) || 1;
+
+  namaArisanEl.textContent =
+    dataArisan.nama ||
+    "Arisan";
+
+  putaranEl.textContent =
+    "Putaran " + periode;
+
+  await cekSetoran();
+
+}
+
+
+/* =========================================================
+   CEK SETORAN
+========================================================= */
+
+async function cekSetoran(){
+
+  const anggota =
+    dataArisan.anggota || {};
+
+  const jumlahAnggota =
+    Object.keys(anggota).length;
+
+  if(jumlahAnggota < 2){
+
+    throw new Error(
+      "Jumlah anggota arisan belum mencukupi."
+    );
+
+  }
+
+
+  const snap =
+    await get(
+      ref(
+        db,
+        `/arisan_setoran/${arisanId}/${periode}`
+      )
+    );
+
+  const dataSetoran =
+    snap.exists()
+      ? snap.val()
+      : {};
+
+
+  /*
+    Ambil anggota yang belum pernah
+    mendapatkan arisan.
+  */
+
+  let belum =
+    Object.entries(
+      anggota
+    ).filter(
+      ([id,a]) =>
+        a &&
+        a.sudahDapat !== true
+    );
+
+
+  /*
+    Cek anggota yang dikunci
+    sebagai pemenang terakhir.
+    
+    Informasi kunci TIDAK ditampilkan
+    ke pengguna.
+  */
+
+  const kunci =
+    belum.find(
+      ([id,a]) =>
+        a.kunciTerakhir === true
+    );
+
+
+  /*
+    Jika ada anggota yang dikunci
+    dan masih ada anggota lain,
+    anggota tersebut tidak ikut kocok.
+  */
+
+  if(
+    kunci &&
+    belum.length > 1
+  ){
+
+    belum =
+      belum.filter(
+        ([id]) =>
+          id !== kunci[0]
+      );
+
+  }
+
+
+  /*
+    Jika hanya tersisa anggota kunci,
+    tetap boleh menjadi peserta.
+  */
+
+  if(
+    belum.length === 0 &&
+    kunci
+  ){
+
+    belum = [kunci];
+
+  }
+
+
+  if(belum.length === 0){
+
+    throw new Error(
+      "Tidak ada anggota yang dapat dikocok."
+    );
+
+  }
+
+
+  /*
+    Cek siapa yang sudah setor
+    pada periode ini.
+  */
+
+  const belumSetor =
+    belum.filter(
+      ([id]) =>
+        !dataSetoran[id]
+    );
+
+
+  if(belumSetor.length > 0){
+
+    const namaBelum =
+      belumSetor.map(
+        ([id,a]) =>
+          a.nama || id
+      );
+
+    throw new Error(
+      "Belum semua anggota membayar iuran periode ini:\n\n" +
+      namaBelum.join(", ")
+    );
+
+  }
+
+
+  daftarKocok =
+    belum.map(
+      ([id]) => id
+    );
+
+
+  if(
+    daftarKocok.length === 0
+  ){
+
+    throw new Error(
+      "Daftar peserta kosong."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   MULAI ROLET
+========================================================= */
+
+async function mulaiRolet(){
+
+  if(roletSedangBerjalan){
+
+    return;
+
+  }
+
+  if(
+    !daftarKocok ||
+    daftarKocok.length === 0
+  ){
+
+    tampilError(
+      "Tidak ada peserta yang dapat dikocok."
+    );
+
+    return;
+
+  }
+
+  roletSedangBerjalan = true;
+
+  btnSound.disabled = true;
+
+  btnSound.classList.add(
+    "active"
+  );
+
+  btnSound.textContent =
+    "🔊 Rolet Sedang Berjalan...";
+
+  areaKocokEl.style.display =
+    "block";
+
+  winnerEl.classList.remove(
+    "show"
+  );
+
+  roletBoxEl.classList.add(
+    "berputar"
+  );
+
+  statusEl.textContent =
+    "🎰 Pengundian sedang berlangsung...";
+
+  playDrum();
+
+
+  /*
+    Durasi total = 15 detik.
+  */
+
+  const durasi =
+    15000;
+
+  const mulai =
+    Date.now();
+
+  let index =
+    Math.floor(
+      Math.random() *
+      daftarKocok.length
+    );
+
+
+  /*
+    Fungsi mengambil nama peserta.
+  */
+
+  function getNama(id){
+
+    const a =
+      dataArisan.anggota?.[id];
+
+    return (
+      a?.nama ||
+      id
+    );
+
+  }
+
+
+  /*
+    Loop animasi.
+    Awalnya cepat,
+    kemudian semakin lambat.
+  */
+
+  while(true){
+
+    const elapsed =
+      Date.now() - mulai;
+
+    if(elapsed >= durasi){
+
+      break;
+
+    }
+
+
+    /*
+      Pilih peserta berikutnya.
+    */
+
+    index =
+      (index + 1) %
+      daftarKocok.length;
+
+    const id =
+      daftarKocok[index];
+
+    namaEl.textContent =
+      getNama(id);
+
+
+    /*
+      Kecepatan animasi.
+    */
+
+    let delay = 70;
+
+    if(elapsed >= 8000){
+
+      delay = 105;
+
+    }
+
+    if(elapsed >= 10500){
+
+      delay = 145;
+
+    }
+
+    if(elapsed >= 12000){
+
+      delay = 200;
+
+    }
+
+    if(elapsed >= 13500){
+
+      delay = 300;
+
+    }
+
+    if(elapsed >= 14500){
+
+      delay = 500;
+
+    }
+
+
+    /*
+      Jangan sampai melebihi
+      durasi 15 detik.
+    */
+
+    const sisa =
+      durasi - elapsed;
+
+    if(delay > sisa){
+
+      delay = sisa;
+
+    }
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          delay
+        )
+    );
+
+  }
+
+
+  /*
+    Hentikan suara.
+  */
+
+  if(drumTimer){
+
+    clearInterval(
+      drumTimer
+    );
+
+    drumTimer = null;
+
+  }
+
+
+  /*
+    Tentukan pemenang secara acak.
+  */
+
+  const randomIndex =
+    Math.floor(
+      Math.random() *
+      daftarKocok.length
+    );
+
+  pemenangId =
+    daftarKocok[randomIndex];
+
+  pemenang =
+    dataArisan.anggota?.[
+      pemenangId
+    ] || {};
+
+
+  /*
+    Tampilkan nama pemenang.
+  */
+
+  namaEl.textContent =
+    pemenang.nama ||
+    pemenangId;
+
+  statusEl.textContent =
+    "🎉 Pemenang telah ditentukan!";
+
+  roletBoxEl.classList.remove(
+    "berputar"
+  );
+
+
+  /*
+    Beri sedikit jeda sebelum
+    proses penyimpanan.
+  */
+
+  await new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        700
+      )
+  );
+
+
+  await prosesPemenang();
+
+}
+
+
+/* =========================================================
+   PROSES PEMENANG
+========================================================= */
+
+async function prosesPemenang(){
+
+  try{
+
+    /*
+      Total kas:
+      iuran × jumlah anggota
+    */
+
+    const iuran =
+      Number(
+        dataArisan.iuran
+      ) || 0;
+
+    const jumlahAnggota =
+      Number(
+        dataArisan.jumlahAnggota
+      ) ||
+      Object.keys(
+        dataArisan.anggota || {}
+      ).length;
+
+    totalKas =
+      iuran *
+      jumlahAnggota;
+
+
+    /*
+      Jasa kas.
+    */
+
+    jasa =
+      Number(
+        dataArisan.jasaKas
+      ) || 0;
+
+
+    /*
+      Uang yang diterima pemenang.
+    */
+
+    diterima =
+      Math.max(
+        0,
+        totalKas - jasa
+      );
+
+
+    /*
+      Simpan transaksi.
+    */
+
+    const transaksiRef =
+      push(
+        ref(
+          db,
+          `/arisan_transaksi/${arisanId}/${periode}`
+        )
+      );
+
+    await set(
+      transaksiRef,
+      {
+        tanggal:
+          new Date().toISOString(),
+
+        pemenangId:
+          pemenangId,
+
+        totalKas:
+          totalKas,
+
+        jasaRp:
+          jasa,
+
+        diterima:
+          diterima,
+
+        metode:
+          "rolet",
+
+        periode:
+          periode,
+
+        namaPemenang:
+          pemenang.nama ||
+          pemenangId
+      }
+    );
+
+
+    /*
+      Tandai pemenang sudah mendapat.
+    */
+
+    await update(
+      ref(
+        db,
+        `/arisan/${arisanId}/anggota/${pemenangId}`
+      ),
+      {
+        sudahDapat:true,
+
+        totalSetor:
+          Number(
+            pemenang.totalSetor
+          ) || totalKas
+      }
+    );
+
+
+    /*
+      Hitung periode berikutnya.
+    */
+
+    const anggotaIds =
+      Object.keys(
+        dataArisan.anggota || {}
+      );
+
+    const sudahMenang =
+      anggotaIds.filter(
+        id => {
+
+          if(
+            id === pemenangId
+          ){
+
+            return true;
+
+          }
+
+          return (
+            dataArisan
+              .anggota?.[id]
+              ?.sudahDapat === true
+          );
+
+        }
+      ).length;
+
+
+    /*
+      Jika semua anggota sudah
+      mendapatkan giliran,
+      arisan selesai.
+    */
+
+    if(
+      sudahMenang >=
+      anggotaIds.length
+    ){
+
+      await update(
+        ref(
+          db,
+          `/arisan/${arisanId}`
+        ),
+        {
+          status:"selesai",
+
+          periodeSekarang:
+            periode
+        }
+      );
+
+    }else{
+
+      await update(
+        ref(
+          db,
+          `/arisan/${arisanId}`
+        ),
+        {
+          periodeSekarang:
+            periode + 1
+        }
+      );
+
+    }
+
+
+    /*
+      Simpan log aktivitas.
+    */
+
+    try{
+
+      const logRef =
+        push(
+          ref(
+            db,
+            "/log_aktivitas"
+          )
+        );
+
+      await set(
+        logRef,
+        {
+          waktu:
+            new Date().toISOString(),
+
+          aksi:
+            "KOCOK_ARISAN",
+
+          arisanId:
+            arisanId,
+
+          periode:
+            periode,
+
+          pemenang:
+            pemenang.nama ||
+            pemenangId,
+
+          nominal:
+            diterima
+        }
+      );
+
+    }catch(logError){
+
+      console.warn(
+        "Log gagal disimpan:",
+        logError
+      );
+
+    }
+
+
+    /*
+      Tampilkan hasil.
+    */
+
+    tampilkanPemenang();
+
+  }catch(error){
+
+    console.error(error);
+
+    tampilError(
+      "Pemenang sudah ditentukan tetapi terjadi masalah saat menyimpan data: " +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   TAMPILKAN PEMENANG
+========================================================= */
+
+function tampilkanPemenang(){
+
+  roletSedangBerjalan =
+    false;
+
+  areaKocokEl.style.display =
+    "none";
+
+  winnerEl.classList.add(
+    "show"
+  );
+
+
+  namaPemenangEl.textContent =
+    pemenang.nama ||
+    pemenangId;
+
+
+  nominalEl.textContent =
+    rupiah(
+      diterima
+    );
+
+
+  detailUangEl.innerHTML =
+    `
+      Total iuran:
+      <b>${rupiah(totalKas)}</b>
+      <br>
+
+      Jasa kas:
+      <b>${rupiah(jasa)}</b>
+      <br>
+
+      Diterima:
+      <b>${rupiah(diterima)}</b>
+    `;
+
+
+  /*
+    Sembunyikan tombol suara
+    setelah proses selesai.
+  */
+
+  btnSound.style.display =
+    "none";
+
+
+  playMenang();
+
+
+  /*
+    Confetti sederhana.
+  */
+
+  confetti();
+
+
+  /*
+    WhatsApp.
+  */
+
+  const hp =
+    pemenang.hp ||
+    pemenang.telepon ||
+    pemenang.noTelepon ||
+    "";
+
+
+  const nomor =
+    String(hp)
+      .replace(/\D/g,"")
+      .replace(/^0/,"62");
+
+
+  const pesan =
+`🎉 *PEMENANG ARISAN KOPERASI ARFA*
+
+Nama: ${pemenang.nama || pemenangId}
+Arisan: ${dataArisan.nama || "-"}
+Putaran: ${periode}
+
+Total Iuran: ${rupiah(totalKas)}
+Jasa Kas: ${rupiah(jasa)}
+Diterima: ${rupiah(diterima)}
+
+Selamat kepada pemenang! 🎊
+
+_Koperasi ARFA Sejahtera_`;
+
+
+  btnWA.onclick =
+    ()=>{
+
+      const url =
+        nomor
+          ? `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`
+          : `https://wa.me/?text=${encodeURIComponent(pesan)}`;
+
+      window.open(
+        url,
+        "_blank"
+      );
+
+    };
+
+
+  /*
+    Cetak nota.
+  */
+
+  btnPrint.onclick =
+    ()=>{
+
+      cetakNota();
+
+    };
+
+}
+
+
+/* =========================================================
+   CETAK NOTA
+========================================================= */
+
+function cetakNota(){
+
+  if(
+    !window.jspdf ||
+    !window.jspdf.jsPDF
+  ){
+
+    alert(
+      "Library PDF belum siap."
+    );
+
+    return;
+
+  }
+
+  const {
+    jsPDF
+  } = window.jspdf;
+
+
+  const pdf =
+    new jsPDF(
+      {
+        orientation:"portrait",
+        unit:"mm",
+        format:[80,130]
+      }
+    );
+
+
+  const center =
+    40;
+
+
+  pdf.setFont(
+    "helvetica",
+    "bold"
+  );
+
+  pdf.setFontSize(
+    13
+  );
+
+  pdf.text(
+    "KOPERASI ARFA",
+    center,
+    10,
+    {
+      align:"center"
+    }
+  );
+
+
+  pdf.setFontSize(
+    8
+  );
+
+  pdf.setFont(
+    "helvetica",
+    "normal"
+  );
+
+  pdf.text(
+    "Sejahtera",
+    center,
+    15,
+    {
+      align:"center"
+    }
+  );
+
+
+  pdf.line(
+    8,
+    19,
+    72,
+    19
+  );
+
+
+  pdf.setFont(
+    "helvetica",
+    "bold"
+  );
+
+  pdf.setFontSize(
+    10
+  );
+
+  pdf.text(
+    "BUKTI PEMENANG ARISAN",
+    center,
+    26,
+    {
+      align:"center"
+    }
+  );
+
+
+  pdf.setFont(
+    "helvetica",
+    "normal"
+  );
+
+  pdf.setFontSize(
+    8
+  );
+
+
+  let y =
+    35;
+
+
+  pdf.text(
+    "Arisan",
+    8,
+    y
+  );
+
+  pdf.text(
+    ": " +
+    (dataArisan.nama || "-"),
+    28,
+    y
+  );
+
+
+  y += 6;
+
+  pdf.text(
+    "Putaran",
+    8,
+    y
+  );
+
+  pdf.text(
+    ": " +
+    periode,
+    28,
+    y
+  );
+
+
+  y += 6;
+
+  pdf.text(
+    "Pemenang",
+    8,
+    y
+  );
+
+  pdf.text(
+    ": " +
+    (pemenang.nama || pemenangId),
+    28,
+    y
+  );
+
+
+  y += 10;
+
+  pdf.line(
+    8,
+    y,
+    72,
+    y
+  );
+
+
+  y += 8;
+
+  pdf.text(
+    "Total Iuran",
+    8,
+    y
+  );
+
+  pdf.text(
+    rupiah(totalKas),
+    72,
+    y,
+    {
+      align:"right"
+    }
+  );
+
+
+  y += 6;
+
+  pdf.text(
+    "Jasa Kas",
+    8,
+    y
+  );
+
+  pdf.text(
+    rupiah(jasa),
+    72,
+    y,
+    {
+      align:"right"
+    }
+  );
+
+
+  y += 7;
+
+  pdf.setFont(
+    "helvetica",
+    "bold"
+  );
+
+  pdf.text(
+    "DITERIMA",
+    8,
+    y
+  );
+
+  pdf.text(
+    rupiah(diterima),
+    72,
+    y,
+    {
+      align:"right"
+    }
+  );
+
+
+  y += 12;
+
+  pdf.setFont(
+    "helvetica",
+    "normal"
+  );
+
+  pdf.setFontSize(
+    7
+  );
+
+  pdf.text(
+    "Tanggal: " +
+    new Date().toLocaleDateString(
+      "id-ID"
+    ),
+    center,
+    y,
+    {
+      align:"center"
+    }
+  );
+
+
+  y += 7;
+
+  pdf.text(
+    "Terima kasih",
+    center,
+    y,
+    {
+      align:"center"
+    }
+  );
+
+
+  pdf.save(
+    `Pemenang-Arisan-${periode}.pdf`
+  );
+
+}
+
+
+/* =========================================================
+   CONFETTI
+========================================================= */
+
+function confetti(){
+
+  const jumlah =
+    90;
+
+  for(
+    let i=0;
+    i<jumlah;
+    i++
+  ){
+
+    const el =
+      document.createElement(
+        "div"
+      );
+
+    el.style.position =
+      "fixed";
+
+    el.style.left =
+      Math.random()*100 +
+      "vw";
+
+    el.style.top =
+      "-10px";
+
+    el.style.width =
+      "8px";
+
+    el.style.height =
+      "14px";
+
+    el.style.background =
+      `hsl(${Math.random()*360},90%,55%)`;
+
+    el.style.zIndex =
+      "99999";
+
+    el.style.pointerEvents =
+      "none";
+
+    el.style.borderRadius =
+      "2px";
+
+    document.body.appendChild(
+      el
+    );
+
+
+    const durasi =
+      1800 +
+      Math.random()*2200;
+
+
+    const rotasi =
+      Math.random()*720;
+
+
+    el.animate(
+      [
+        {
+          transform:
+            "translateY(0) rotate(0deg)",
+          opacity:1
+        },
+        {
+          transform:
+            `translateY(110vh) rotate(${rotasi}deg)`,
+          opacity:.9
+        }
+      ],
+      {
+        duration:
+          durasi,
+
+        easing:
+          "cubic-bezier(.2,.8,.3,1)"
+      }
+    );
+
+
+    setTimeout(
+      ()=>{
+        el.remove();
+      },
+      durasi
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+function tampilError(message){
+
+  if(drumTimer){
+
+    clearInterval(
+      drumTimer
+    );
+
+    drumTimer = null;
+
+  }
+
+  roletSedangBerjalan =
+    false;
+
+  loadingEl.style.display =
+    "none";
+
+  areaKocokEl.style.display =
+    "none";
+
+  winnerEl.classList.remove(
+    "show"
+  );
+
+  btnSound.style.display =
+    "none";
+
+  errorEl.style.display =
+    "block";
+
+  errorEl.innerHTML =
+    `
+      <b>⚠️ Tidak dapat menjalankan rolet</b>
+      <br><br>
+      ${String(message)
+        .replace(/\n/g,"<br>")}
+    `;
+
+}
+
+
+/* =========================================================
+   TOMBOL AKTIFKAN SUARA
+========================================================= */
+
+btnSound.addEventListener(
+  "click",
+  async ()=>{
+
+    if(roletSedangBerjalan){
+
+      return;
+
+    }
+
+    try{
+
+      /*
+        Ini penting untuk Android/Chrome.
+        AudioContext harus dibuat/resume
+        dari interaksi user.
+      */
+
+      initAudio();
+
+      if(audioCtx){
+
+        if(
+          audioCtx.state ===
+          "suspended"
+        ){
+
+          await audioCtx.resume();
+
+        }
+
+        playTestSound();
+
+      }
+
+
+      btnSound.textContent =
+        "🔊 Suara Aktif — Memulai...";
+
+      btnSound.classList.add(
+        "active"
+      );
+
+
+      /*
+        Beri jeda kecil supaya
+        suara aktivasi terdengar,
+        lalu mulai rolet.
+      */
+
+      setTimeout(
+        ()=>{
+          mulaiRolet();
+        },
+        350
+      );
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      /*
+        Tetap jalankan rolet
+        walaupun audio gagal.
+      */
+
+      btnSound.textContent =
+        "🎰 Mulai Rolet";
+
+      setTimeout(
+        ()=>{
+          mulaiRolet();
+        },
+        300
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+(async function(){
+
+  try{
+
+    await loadArisan();
+
+    loadingEl.style.display =
+      "none";
+
+
+    statusEl.textContent =
+      "Semua setoran sudah lengkap. Tekan tombol suara untuk mulai.";
+
+  }catch(error){
+
+    console.error(
+      error
+    );
+
+    tampilError(
+      error.message ||
+      "Terjadi kesalahan."
+    );
+
+  }
+
+})();
+
+</script>
+
+</body>
+</html>

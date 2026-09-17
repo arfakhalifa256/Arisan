@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kunci Arisan</title><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><style>:root{--primary:#3b82f6;--primary-dark:#2563eb;--bg:#f1f5f9;--card:#fff;--danger:#dc2626;--success:#10b981}*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}body{background:var(--bg);font-size:13px}header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}.container{padding:15px;max-width:600px;margin:0 auto}.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}.item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px}.item.kunci{background:#dbeafe;border-color:var(--primary)}.btn{padding:8px 14px;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer}.btn-kunci{background:var(--primary);color:#fff}.btn-buka{background:var(--danger);color:#fff}.toast{position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:10px 15px;border-radius:8px;opacity:0;transition:.3s}.toast.show{opacity:1}</style></head><body>
+<header><div style="display:flex;gap:8px;align-items:center;font-weight:700"><span class="material-icons">vpn_key</span> KUNCI TERAKHIR</div><span onclick="history.back()" class="material-icons" style="cursor:pointer">arrow_back</span></header>
+<div class="container"><div class="card"><h3 id="judul">Loading...</h3><p style="font-size:11px;color:#6b7280" id="putaran"></p></div><div class="card"><div id="list"></div><button onclick="resetSudahDapat()" style="margin-top:12px;width:100%;padding:10px;background:#f59e0b;color:#fff;border:none;border-radius:8px;font-weight:700">🔧 Reset Jika Semua Kecentang Sudah Dapat (Darurat)</button></div></div>
+<div id="toast" class="toast"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const cfg={apiKey:"AIzaSyDd0s73-qW2uiOlBWR-afybFZzMafCHeSo",authDomain:"arfa-c7dee.firebaseapp.com",databaseURL:"https://arfa-c7dee-default-rtdb.firebaseio.com",projectId:"arfa-c7dee"};const app=initializeApp(cfg);const db=getDatabase(app);
+const idArisan=new URLSearchParams(location.search).get("id");const username=localStorage.getItem("username")||"Admin";
+function toast(m){const t=document.getElementById("toast");t.innerText=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+function escapeHTML(t){return String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+async function load(){
+  const snap=await get(ref(db,`arisan/${idArisan}`));const a=snap.val();
+  document.getElementById("judul").innerText=a.nama;document.getElementById("putaran").innerText=`Putaran ${a.periodeSekarang}/${a.jumlahAnggota}`;
+  const div=document.getElementById("list");div.innerHTML="";
+  const terkunci=Object.entries(a.anggota||{}).find(([k,v])=>v.kunciTerakhir&&!v.sudahDapat);
+  if(terkunci) div.innerHTML+=`<div style="background:#dbeafe;padding:8px;border-radius:8px;margin-bottom:8px"> ${escapeHTML(terkunci[1].nama)} dikunci</div>`;
+  Object.entries(a.anggota||{}).forEach(([key,ag])=>{
+    if(ag.sudahDapat){div.innerHTML+=`<div class="item" style="opacity:.6"><div><b>${escapeHTML(ag.nama)}</b><br><small>✅ Sudah P${ag.periodeDapat||''}</small></div><span>Selesai</span></div>`;return;}
+    const is=!!ag.kunciTerakhir;
+    div.innerHTML+=`<div class="item ${is?'kunci':''}"><div><b>${escapeHTML(ag.nama)} ${is?'?':''}</b><br><small>${escapeHTML(ag.hp||'-')}</small></div><button class="${is?'btn btn-buka':'btn btn-kunci'}" onclick="toggleKunci('${key}',${is})">${is?'Buka':'Kunci'}</button></div>`;
+  });
+}
+window.toggleKunci=async function(key,isNow){
+  const snap=await get(ref(db,`arisan/${idArisan}`));const a=snap.val();
+  const ada=Object.entries(a.anggota||{}).find(([k,v])=>v.kunciTerakhir&&k!==key&&!v.sudahDapat);
+  if(!isNow&&ada){alert(`Sudah ada ${ada[1].nama}`);return;}
+  await update(ref(db,`arisan/${idArisan}/anggota/${key}`),{kunciTerakhir:!isNow});
+  push(ref(db,"/log_aktivitas"),{waktu:Date.now(),waktu_baca:new Date().toLocaleString('id-ID'),aksi:!isNow?"KUNCI_ARISAN":"BUKA_KUNCI",oleh:username,nama:a.anggota[key].nama,namaArisan:a.nama});
+  toast(!isNow?"Dikunci":"Dibuka");load();
+}
+window.resetSudahDapat=async function(){
+  if(!confirm("Reset semua jadi Belum Dapat kecuali yang sudah ada di riwayat?")) return;
+  const snapT=await get(ref(db,`arisan_transaksi/${idArisan}`));const riw=snapT.val()||{};const menang=Object.values(riw).map(r=>r.pemenangId);
+  const snapA=await get(ref(db,`arisan/${idArisan}/anggota`));const ag=snapA.val()||{};
+  for(const [k,v] of Object.entries(ag)){
+    const harusSudah = menang.includes(k);
+    await update(ref(db,`arisan/${idArisan}/anggota/${k}`),{sudahDapat:harusSudah, periodeDapat: harusSudah? v.periodeDapat||1 : null});
+  }
+  alert("Reset selesai");load();
+}
+load();
+</script></body></html>
