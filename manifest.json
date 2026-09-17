@@ -2,9 +2,11 @@
   "name": "Arisan Koperasi ARFA",
   "short_name": "ARFA Arisan",
   "description": "Kelola Arisan Koperasi ARFA",
-  "start_url": "arisan.html",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f1f5f9",
+  "display_override": ["standalone", "window-controls-overlay"],
+  "background_color": "#2563eb",
   "theme_color": "#2563eb",
   "orientation": "portrait",
   "icons": [

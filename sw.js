@@ -1,5 +1,6 @@
-const CACHE_NAME = "arfa-arisan-v2";
+const CACHE_NAME = "arfa-arisan-v3";
 const FILES_TO_CACHE = [
+  "index.html",
   "arisan.html",
   "arisan-rolet.html",
   "arisan-kunci.html",
