@@ -37,11 +37,9 @@ tr.lunas{background:#dcfce7}
 .info-rolet{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:12px;margin-top:12px;font-size:11px}
 @media(max-width:600px){.grid-2{grid-template-columns:1fr}}
 </style>
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1077/1077114.png">
-
-
 </head>
 <body>
 <header><div class="brand"><span class="material-icons">groups</span> ARISAN KOPERASI</div><span onclick="window.location='index.html'" class="material-icons" style="cursor:pointer">home</span></header>
@@ -59,7 +57,7 @@ tr.lunas{background:#dcfce7}
 <div id="modalDetail" class="modal"><div class="modal-content">
 <div style="display:flex;justify-content:space-between;align-items:center"><h2 id="detailJudul">Detail Arisan</h2><div style="display:flex;gap:6px;align-items:center"><span onclick="bukaHalamanKunci()" class="material-icons icon-kunci-samar" title="Kelola Kunci">vpn_key</span><span onclick="tutupModal()" class="material-icons" style="cursor:pointer">close</span></div></div>
 <div id="detailInfo" style="margin-top:8px"></div>
-<div class="info-rolet"><b>Kocok di Halaman Baru</b><br><br>Tekan tombol kocok, animasi rolet dibuka penuh di window baru.</div>
+<div class="info-rolet"><b>Kocok di Halaman Baru</b><br>Tekan tombol kocok, animasi rolet dibuka penuh di window baru.</div>
 <h3>Daftar Anggota</h3><div style="overflow-x:auto"><table class="tabel-setor"><thead><tr><th>Nama</th><th>No HP</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tbodyAnggota"></tbody></table></div>
 <h3>Input Setoran Putaran <span id="txtPeriodeSekarang"></span></h3><div style="overflow-x:auto"><table class="tabel-setor"><thead><tr><th width="40">Lunas</th><th>Nama</th><th>No HP</th><th>Jumlah</th></tr></thead><tbody id="tabelSetoran"></tbody></table></div>
 <div class="grid-2" style="margin-top:10px"><div class="form-group"><label>Potongan Jasa Kas Rp</label><input type="number" id="inputJasa" value="0" min="0"></div><div class="form-group"><label>Total Diterima</label><input type="text" id="inputDiterima" readonly style="background:#f3f4f6;font-weight:700;color:var(--success)"></div></div>
@@ -80,17 +78,13 @@ const firebaseConfig = { apiKey: "AIzaSyDd0s73-qW2uiOlBWR-afybFZzMafCHeSo", auth
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// TANPA ROLEBASE - SIAPA AJA BISA BUKA
 const username = localStorage.getItem("username") || "User";
 const role = localStorage.getItem("role") || "user";
 
-  
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(() => console.log('SW registered'))
-    .catch((e) => console.log('SW failed', e));
+  navigator.serviceWorker.register('sw.js').then(()=>console.log('SW registered')).catch(e=>console.log('SW failed',e));
 }
-  
+
 let dataArisan = {};
 let arisanAktifId = null;
 let filterSaatIni = "semua";
@@ -151,9 +145,15 @@ window.bukaHalamanKunci=function(){ if(!arisanAktifId) return; window.location=`
 function renderAnggota(a){
   const tbody=document.getElementById("tbodyAnggota"); tbody.innerHTML="";
   Object.entries(a.anggota||{}).forEach(([id,ag])=>{
-    const st=ag.sudahDapat? `<span style="color:var(--success)">Sudah P${ag.periodeDapat||''}</span>` : `<span style="color:var(--warning)">Belum</span>`;
+    let st="";
+    if(ag.sudahDapat){
+      const p = ag.periodeDapat || ag.putaranDapat || "?";
+      st = `<span style="color:var(--success);font-weight:700">🏆 Sudah P${p}</span>`;
+    } else {
+      st = `<span style="color:var(--warning)">Belum ${ag.kunciTerakhir?'':''}</span>`;
+    }
     const wa=ag.hp&&nomorWAValid(ag.hp)? `<a href="${buatLinkWA(ag.hp)}" target="_blank" class="btn-wa">WA</a>` : "";
-    tbody.innerHTML+=`<tr><td>${escapeHTML(ag.nama)}</td><td>${escapeHTML(ag.hp||"-")} ${wa}</td><td>${st}</td><td><button class="btn-info btn-kecil" onclick="bukaEdit('${id}')">✏️</button></td></tr>`;
+    tbody.innerHTML+=`<tr><td>${escapeHTML(ag.nama)} ${ag.kunciTerakhir?'':''}</td><td>${escapeHTML(ag.hp||"-")} ${wa}</td><td>${st}</td><td><button class="btn-info btn-kecil" onclick="bukaEdit('${id}')">✏️</button></td></tr>`;
   });
 }
 window.bukaEdit=function(id){ const ag=dataArisan[arisanAktifId].anggota[id]; document.getElementById("editAnggotaId").value=id; document.getElementById("editNamaAnggota").value=ag.nama; document.getElementById("editHpAnggota").value=ag.hp||""; document.getElementById("modalEditAnggota").classList.add("show"); };
@@ -184,13 +184,75 @@ document.getElementById("btnHapusArisan").onclick=async()=>{ if(!arisanAktifId) 
 window.hapusList=async function(id,nama){ if(!confirm(`Hapus ${nama}?`)) return; try{ await set(ref(db,`arisan/${id}`),null); await set(ref(db,`arisan_setoran/${id}`),null); await set(ref(db,`arisan_transaksi/${id}`),null); simpanLog("HAPUS_ARISAN",{namaArisan:nama}); showToast("Dihapus"); }catch(e){ alert(e.message); } };
 
 async function loadRiwayat(id){
-  const snap=await get(ref(db,`arisan_transaksi/${id}`)); const data=snap.val()||{}; const list=document.getElementById("listRiwayat"); list.innerHTML="";
-  if(Object.keys(data).length===0){ list.innerHTML=`<p style="color:#888;text-align:center">Belum ada putaran</p>`; return; }
-  let anggota=dataArisan[id]?.anggota||{}; if(Object.keys(anggota).length===0){ const sA=await get(ref(db,`arisan/${id}/anggota`)); anggota=sA.val()||{}; }
-  Object.entries(data).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([periode,t])=>{
-    let namaPemenang=t.namaPemenang|| (t.pemenangId&&anggota[t.pemenangId]?.nama) || t.pemenangId || "-";
-    const tanggal=t.tanggal? new Date(t.tanggal).toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"}) : "-";
-    list.innerHTML+=`<div class="item" style="border-left:4px solid var(--primary);padding:14px;"><div style="display:flex;justify-content:space-between"><div><div style="font-size:12px;color:#64748b;font-weight:600">PUTARAN ${periode}</div><div style="font-size:16px;font-weight:800;color:var(--primary-dark)">🏆 ${escapeHTML(namaPemenang)}</div></div><div style="background:#dcfce7;color:#15803d;padding:5px 9px;border-radius:20px;font-size:10px;font-weight:700">PEMENANG</div></div><div style="font-size:11px;color:#64748b;border-top:1px solid #eee;padding-top:8px;margin-top:8px"><div>📅 ${tanggal}</div><div>💰 ${rupiah(t.totalKas||0)} - Jasa ${rupiah(t.jasaRp||0)} - Diterima <b style="color:var(--success)">${rupiah(t.diterima||0)}</b></div></div></div>`;
+  const snap=await get(ref(db,`arisan_transaksi/${id}`));
+  const data=snap.val()||{};
+  const list=document.getElementById("listRiwayat");
+  list.innerHTML="";
+  if(Object.keys(data).length===0){
+    list.innerHTML=`<p style="color:#888;text-align:center">Belum ada putaran</p>`;
+    return;
+  }
+  let anggota=dataArisan[id]?.anggota||{};
+  if(Object.keys(anggota).length===0){
+    const sA=await get(ref(db,`arisan/${id}/anggota`));
+    anggota=sA.val()||{};
+  }
+
+  // Kumpulkan semua transaksi dengan format apapun
+  let allTransaksi = [];
+
+  Object.entries(data).forEach(([key, val])=>{
+    // FORMAT LAMA: key = "1" dan val = {pemenangId,...} langsung
+    if(val && val.pemenangId){
+      allTransaksi.push({ periode: parseInt(key)||1, data: val, tanggal: val.tanggal||val.waktu||0 });
+    }
+    // FORMAT BARU: key = "1" dan val = { pushId: {pemenangId} }
+    else if(typeof val === 'object'){
+      Object.entries(val).forEach(([pushId, t])=>{
+        if(t && t.pemenangId){
+          // cek apakah pushId adalah periode (angka) atau pushId firebase
+          if(!isNaN(parseInt(pushId)) && t.pemenangId){
+             // kasus aneh double nested
+             allTransaksi.push({ periode: parseInt(pushId), data: t, tanggal: t.tanggal||0 });
+          } else {
+             allTransaksi.push({ periode: parseInt(key)||1, data: t, tanggal: t.tanggal||0 });
+          }
+        }
+      });
+    }
+  });
+
+  // Urutkan P1, P2, P3
+  allTransaksi.sort((a,b)=> (a.periode - b.periode) || (new Date(a.tanggal) - new Date(b.tanggal)));
+
+  // Tampilkan, ambil 1 pemenang terakhir per periode
+  const perPeriode = {};
+  allTransaksi.forEach(item=>{
+    perPeriode[item.periode] = item; // timpa dengan yang terbaru
+  });
+
+  Object.keys(perPeriode).sort((a,b)=>a-b).forEach(periode=>{
+    const item = perPeriode[periode];
+    const t = item.data;
+    let namaPemenang = t.namaPemenang || anggota[t.pemenangId]?.nama || t.pemenangId || "-";
+    if(namaPemenang.startsWith("agt_")) namaPemenang = anggota[namaPemenang]?.nama || namaPemenang;
+    const tanggal = t.tanggal? new Date(isNaN(t.tanggal)? t.tanggal : Number(t.tanggal)).toLocaleDateString("id-ID",{day:"2-digit",month:"short"}) : "-";
+
+    list.innerHTML += `<div class="item" style="border-left:4px solid var(--primary);padding:14px;">
+      <div style="display:flex;justify-content:space-between">
+        <div><div style="font-size:11px;color:#64748b;font-weight:700">PUTARAN ${periode}</div><div style="font-size:16px;font-weight:800;color:var(--primary-dark)">🏆 ${escapeHTML(namaPemenang)}</div></div>
+        <div style="background:#dcfce7;color:#15803d;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700">P${periode}</div>
+      </div>
+      <div style="font-size:11px;color:#64748b;border-top:1px solid #eee;padding-top:8px;margin-top:8px">📅 ${tanggal} • 💰 ${rupiah(t.diterima||t.totalKas||0)}</div>
+    </div>`;
+  });
+
+  // Auto-fix Sudah P
+  Object.values(perPeriode).forEach(item=>{
+    const t=item.data;
+    if(t.pemenangId && anggota[t.pemenangId] &&!anggota[t.pemenangId].periodeDapat){
+      update(ref(db,`arisan/${id}/anggota/${t.pemenangId}`),{periodeDapat:item.periode, sudahDapat:true});
+    }
   });
 }
 </script>
