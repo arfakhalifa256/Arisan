@@ -7,10 +7,10 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-touch-icon" content="https://cdn-icons-png.flaticon.com/512/1077/1077114.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -70,11 +70,12 @@ header{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;padding:18p
 
   <p style="text-align:center;margin-top:30px;color:#94a3b8;font-size:11px">ARFA v3.0 • PWA Standalone</p>
 </div>
-
-<script>
+  
+  <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
+
 
 // Tombol Install PWA
 let deferredPrompt;
