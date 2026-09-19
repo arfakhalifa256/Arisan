@@ -112,7 +112,7 @@ document.getElementById("btnBuatArisan").onclick=async()=>{ const nama=document.
 window.bukaDetail=async function(id){ arisanAktifId=id; const a=dataArisan[id]; if(!a) return; document.getElementById("detailJudul").innerText=a.nama; document.getElementById("txtPeriodeSekarang").innerText="P"+(a.periodeSekarang||1); const belum=Object.entries(a.anggota||{}).filter(([k,v])=>!v.sudahDapat).length; document.getElementById("detailInfo").innerHTML=`<p><b>Putaran:</b> ${a.periodeSekarang||1}/${a.jumlahAnggota}</p><p><b>Iuran:</b> ${rupiah(a.iuran)}</p><p><b>Sisa:</b> ${belum} orang</p>`; renderAnggota(a); await renderSetoran(a); await loadRiwayat(id); hitungDiterima(); document.getElementById("inputJasa").oninput=hitungDiterima; cekBisaTambahAnggota(a); document.getElementById("modalDetail").classList.add("show"); };
 window.tutupModal=function(){ document.getElementById("modalDetail").classList.remove("show"); };
 window.bukaHalamanKunci=function(){ if(!arisanAktifId) return; window.location=`arisan-kunci.html?id=${encodeURIComponent(arisanAktifId)}`; };
-function renderAnggota(a){ const tbody=document.getElementById("tbodyAnggota"); tbody.innerHTML=""; Object.entries(a.anggota||{}).forEach(([id,ag])=>{ let st=""; if(ag.sudahDapat){ const p=ag.periodeDapat||ag.putaranDapat||"?"; st=`<span style="color:var(--success);font-weight:700">🏆 Sudah P${p}</span>`; }else{ st=`<span style="color:var(--warning)">Belum</span>`; } const wa=ag.hp&&nomorWAValid(ag.hp)? `<a href="${buatLinkWA(ag.hp)}" target="_blank" class="btn-wa">WA</a>` : ""; tbody.innerHTML+=`<tr><td>${escapeHTML(ag.nama)} ${ag.kunciTerakhir?'🔒':''}</td><td>${escapeHTML(ag.hp||"-")} ${wa}</td><td>${st}</td><td><button class="btn-info btn-kecil" onclick="bukaEdit('${id}')">✏️</button></td></tr>`; }); }
+function renderAnggota(a){ const tbody=document.getElementById("tbodyAnggota"); tbody.innerHTML=""; Object.entries(a.anggota||{}).forEach(([id,ag])=>{ let st=""; if(ag.sudahDapat){ const p=ag.periodeDapat||ag.putaranDapat||"?"; st=`<span style="color:var(--success);font-weight:700">🏆 Sudah P${p}</span>`; }else{ st=`<span style="color:var(--warning)">Belum</span>`; } const wa=ag.hp&&nomorWAValid(ag.hp)? `<a href="${buatLinkWA(ag.hp)}" target="_blank" class="btn-wa">WA</a>` : ""; tbody.innerHTML+=`<tr><td>${escapeHTML(ag.nama)} ${ag.kunciTerakhir?'':''}</td><td>${escapeHTML(ag.hp||"-")} ${wa}</td><td>${st}</td><td><button class="btn-info btn-kecil" onclick="bukaEdit('${id}')">✏️</button></td></tr>`; }); }
 window.bukaEdit=function(id){ const ag=dataArisan[arisanAktifId].anggota[id]; document.getElementById("editAnggotaId").value=id; document.getElementById("editNamaAnggota").value=ag.nama; document.getElementById("editHpAnggota").value=ag.hp||""; document.getElementById("modalEditAnggota").classList.add("show"); };
 window.tutupModalEditAnggota=function(){ document.getElementById("modalEditAnggota").classList.remove("show"); };
 window.simpanEditAnggota=async function(){ const id=document.getElementById("editAnggotaId").value; const nama=document.getElementById("editNamaAnggota").value.trim(); const hp=document.getElementById("editHpAnggota").value.trim(); if(!nama) return; await update(ref(db,`arisan/${arisanAktifId}/anggota/${id}`),{nama,hp}); showToast("Update"); tutupModalEditAnggota(); };
@@ -153,21 +153,7 @@ function hitungDiterima(){ if(!arisanAktifId) return; const a=dataArisan[arisanA
   tbody.innerHTML = html; // tulis SEKALI aja, gak pakai +=
 
   // Pasang listener sekali
-  tbody.querySelectorAll(".cbSetor").forEach(cb=>{
-    cb.addEventListener("change", async function(){
-      const aid=this.dataset.id;
-      this.disabled=true;
-      try{
-        if(this.checked){
-          await set(ref(db,`arisan_setoran/${arisanAktifId}/${periode}/${aid}`),{jumlah:Number(a.iuran),tanggal:Date.now(),status:"lunas"});
-          this.closest("tr").classList.add("lunas");
-        }else{
-          await set(ref(db,`arisan_setoran/${arisanAktifId}/${periode}/${aid}`),null);
-          this.closest("tr").classList.remove("lunas");
-        }
-      }finally{ this.disabled=false; }
-    });
-  });
+  
       // === HITUNG TOTAL ===
   function updateTotalSetoran(){
     const totalAnggota = mapAnggota.size;
@@ -207,8 +193,35 @@ function hitungDiterima(){ if(!arisanAktifId) return; const a=dataArisan[arisanA
 document.getElementById("btnHapusArisan").onclick=async()=>{ if(!arisanAktifId) return; const a=dataArisan[arisanAktifId]; await hapusList(arisanAktifId,a?.nama||"Arisan"); tutupModal(); };
 window.hapusList=async function(id,nama){ if(!confirm(`Hapus ${nama}?`)) return; try{ await set(ref(db,`arisan/${id}`),null); await set(ref(db,`arisan_setoran/${id}`),null); await set(ref(db,`arisan_transaksi/${id}`),null); simpanLog("HAPUS_ARISAN",{namaArisan:nama}); showToast("Dihapus"); }catch(e){ alert(e.message); } };
 async function loadRiwayat(id){ const snap=await get(ref(db,`arisan_transaksi/${id}`)); const data=snap.val()||{}; const list=document.getElementById("listRiwayat"); list.innerHTML=""; if(Object.keys(data).length===0){ list.innerHTML=`<p style="color:#888;text-align:center">Belum ada pemenang</p>`; return; } let anggota=dataArisan[id]?.anggota||{}; if(Object.keys(anggota).length===0){ const sA=await get(ref(db,`arisan/${id}/anggota`)); anggota=sA.val()||{}; } let allTransaksi=[]; Object.entries(data).forEach(([key,val])=>{ if(val&&val.pemenangId){ allTransaksi.push({periode:parseInt(key)||1,data:val,tanggal:val.tanggal||0}); }else if(typeof val==='object'){ Object.entries(val).forEach(([pushId,t])=>{ if(t&&t.pemenangId){ allTransaksi.push({periode:parseInt(key)||1,data:t,tanggal:t.tanggal||0}); } }); } }); allTransaksi.sort((a,b)=>a.periode-b.periode); const perPeriode={}; allTransaksi.forEach(item=>{ perPeriode[item.periode]=item; }); Object.keys(perPeriode).sort((a,b)=>a-b).forEach(periode=>{ const t=perPeriode[periode].data; let nama=t.namaPemenang||anggota[t.pemenangId]?.nama||t.pemenangId||"-"; if(nama.startsWith("agt_")) nama=anggota[nama]?.nama||nama; const tanggal=t.tanggal? new Date(isNaN(t.tanggal)? t.tanggal : Number(t.tanggal)).toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}) : "-"; list.innerHTML+=`<div class="item" style="border-left:4px solid var(--success);padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;color:#15803d;font-weight:800;letter-spacing:.5px">🏆 PEMENANG PUTARAN ${periode}</div><div style="font-size:17px;font-weight:800;color:var(--text);margin-top:2px">${escapeHTML(nama)}</div><div style="font-size:11px;color:#64748b;margin-top:2px">📅 ${tanggal}</div></div><div style="text-align:right"><div style="background:#dcfce7;color:#15803d;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800">🏆 PEMENANG</div></div></div><div style="font-size:11px;color:#64748b;border-top:1px solid #eee;padding-top:8px;margin-top:10px">💰 Diterima <b style="color:var(--success)">${rupiah(t.diterima||t.totalKas||0)}</b></div></div>`; }); }
-window.tambahAnggotaDiDetail=async function(){ const nama=document.getElementById("tambahNamaDetail").value.trim(); const hp=document.getElementById("tambahHpDetail").value.trim(); if(!nama){ alert("Nama wajib"); return; } if(!arisanAktifId) return; const a=dataArisan[arisanAktifId]; const snapTrans=await get(ref(db,`arisan_transaksi/${arisanAktifId}`)); if(snapTrans.exists()){ alert("Gak bisa tambah anggota, arisan sudah mulai dikocok!"); return; } if((a.periodeSekarang||1)>1){ alert("Gak bisa tambah, sudah masuk putaran "+a.periodeSekarang); return; } const idBaru="agt_"+Date.now(); await update(ref(db,`arisan/${arisanAktifId}/anggota/${idBaru}`),{id:idBaru,nama,hp,sudahDapat:false,totalSetor:0,kunciTerakhir:false}); const jumlahBaru=Object.keys(a.anggota||{}).length+1; await update(ref(db,`arisan/${arisanAktifId}`),{jumlahAnggota:jumlahBaru}); document.getElementById("tambahNamaDetail").value=""; document.getElementById("tambahHpDetail").value=""; showToast(nama+" ditambahkan"); simpanLog("TAMBAH_ANGGOTA_DETAIL",{namaArisan:a.nama,namaBaru:nama}); }
-function cekBisaTambahAnggota(a){ const form=document.getElementById("formTambahAnggota"); if(!form) return; const sudahMulai=(a.periodeSekarang||1)>1; get(ref(db,`arisan_transaksi/${arisanAktifId}`)).then(s=>{ if(s.exists()||sudahMulai){ form.style.display="none"; }else{ form.style.display="block"; } }); }
+
+  window.tambahAnggotaDiDetail=
+  async function(){ 
+    const nama=document.getElementById("tambahNamaDetail").value.trim(); 
+    const hp=document.getElementById("tambahHpDetail").value.trim(); 
+    if(!nama){ alert("Nama wajib"); 
+      return;
+    } 
+    if(!arisanAktifId) return;
+    const a=dataArisan[arisanAktifId];
+    const snapTrans=await get(ref(db,`arisan_transaksi/${arisanAktifId}`));
+    if(snapTrans.exists()){ alert("Gak bisa tambah anggota, arisan sudah mulai dikocok!"); 
+      return; } 
+    if((a.periodeSekarang||1)>1){ alert("Gak bisa tambah, sudah masuk putaran "+a.periodeSekarang); 
+      return; } 
+    const idBaru="agt_"+Date.now(); 
+    await update(ref(db,`arisan/${arisanAktifId}/anggota/${idBaru}`),
+    {id:idBaru,nama,hp,sudahDapat:false,totalSetor:0,kunciTerakhir:false}); 
+    const jumlahBaru=Object.keys(a.anggota||{}).length+1;
+    await update(ref(db,`arisan/${arisanAktifId}`),{jumlahAnggota:jumlahBaru});
+    document.getElementById("tambahNamaDetail").value=""; 
+    document.getElementById("tambahHpDetail").value=""; 
+    showToast(nama+" ditambahkan"); 
+    simpanLog("TAMBAH_ANGGOTA_DETAIL",{namaArisan:a.nama,namaBaru:nama}); }
+
+  function cekBisaTambahAnggota(a){ const form=document.getElementById("formTambahAnggota");
+    if(!form) return; const sudahMulai=(a.periodeSekarang||1)>1; 
+    get(ref(db,`arisan_transaksi/${arisanAktifId}`)).then(s=>{ if(s.exists()||sudahMulai){ form.style.display="none";
+    }else{ form.style.display="block"; } }); }
 </script>
 </body>
 </html>
