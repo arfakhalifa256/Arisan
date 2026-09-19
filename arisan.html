@@ -48,7 +48,17 @@ tr.lunas{background:#dcfce7}
     <div class="form-group"><label>Tambah Anggota</label><input type="text" id="inputNamaAnggota" placeholder="Nama Anggota" style="margin-bottom:6px"><input type="text" id="inputHpAnggota" placeholder="No HP 08xxx"><button class="btn-success" style="margin:10px 0" onclick="tambahAnggotaManual()">+ Tambah Anggota</button><div id="listAnggotaPreview" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
     <button class="btn-primary" id="btnBuatArisan">Buat Arisan</button>
   </div>
-  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2>Daftar Arisan</h2><select id="filterStatus" style="width:auto;padding:6px 10px"><option value="semua">Semua</option><option value="aktif">Aktif</option><option value="selesai">Selesai</option></select></div><div class="list" id="listArisan"></div></div>
+  <div class="card">
+    
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2>Daftar Arisan</h2>
+<div style="display:flex;gap:6px">
+<button class="btn-success btn-kecil" onclick="backupData()">💾 Backup</button>
+<button class="btn-warning btn-kecil" onclick="document.getElementById('fileRestore').click()">📥 Restore</button>
+<input type="file" id="fileRestore" hidden accept=".json" onchange="restoreData(event)">
+</div>
+</div>
+      <select id="filterStatus" 
+        style="width:auto;padding:6px 10px"><option value="semua">Semua</option><option value="aktif">Aktif</option><option value="selesai">Selesai</option></select></div><div class="list" id="listArisan"></div></div>
 </div>
 
 <div id="modalDetail" class="modal"><div class="modal-content">
@@ -222,6 +232,67 @@ async function loadRiwayat(id){ const snap=await get(ref(db,`arisan_transaksi/${
     if(!form) return; const sudahMulai=(a.periodeSekarang||1)>1; 
     get(ref(db,`arisan_transaksi/${arisanAktifId}`)).then(s=>{ if(s.exists()||sudahMulai){ form.style.display="none";
     }else{ form.style.display="block"; } }); }
+
+// === BACKUP SEMUA DATA ===
+window.backupData = async function(){
+  const btn = event.target;
+  const txtAwal = btn.innerText;
+  btn.innerText = "⏳ Proses...";
+  btn.disabled = true;
+  try{
+    const [sArisan, sSetor, sTrans, sLog] = await Promise.all([
+      get(ref(db,"arisan")),
+      get(ref(db,"arisan_setoran")),
+      get(ref(db,"arisan_transaksi")),
+      get(ref(db,"log_aktivitas"))
+    ]);
+    const backup = {
+      tanggal_backup: new Date().toLocaleString('id-ID'),
+      oleh: username,
+      arisan: sArisan.val()||{},
+      arisan_setoran: sSetor.val()||{},
+      arisan_transaksi: sTrans.val()||{},
+      log_aktivitas: sLog.val()||{}
+    };
+    const blob = new Blob([JSON.stringify(backup,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `backup-arisan-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Backup berhasil didownload");
+    simpanLog("BACKUP_DATA",{jumlahArisan:Object.keys(backup.arisan).length});
+  }catch(e){ alert("Gagal backup: "+e.message); }
+  finally{ btn.innerText = txtAwal; btn.disabled = false; }
+}
+
+// === RESTORE DARI FILE JSON ===
+window.restoreData = async function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!confirm(`Restore dari ${file.name} ?\n\nData yang ada sekarang akan DITIMPA dengan data backup.\nLanjutkan?`)) { e.target.value=""; return; }
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data.arisan) throw new Error("File bukan backup arisan");
+
+    // Tulis satu per satu biar aman
+    if(data.arisan) await set(ref(db,"arisan"), data.arisan);
+    if(data.arisan_setoran) await set(ref(db,"arisan_setoran"), data.arisan_setoran);
+    if(data.arisan_transaksi) await set(ref(db,"arisan_transaksi"), data.arisan_transaksi);
+    // log jangan ditimpa, tapi ditambah
+    if(data.log_aktivitas){
+      for(const [k,v] of Object.entries(data.log_aktivitas)){
+        await push(ref(db,"log_aktivitas"), v);
+      }
+    }
+    showToast("Restore berhasil!");
+    simpanLog("RESTORE_DATA",{file:file.name});
+  }catch(err){ alert("Gagal restore: "+err.message); }
+  finally{ e.target.value=""; }
+}
+
 </script>
 </body>
 </html>
