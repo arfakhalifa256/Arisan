@@ -153,7 +153,16 @@ async function mulaiRolet(){
   await prosesPemenang();
 }
 
-async function prosesPemenang(){try{const iuran=Number(dataArisan.iuran)||0;const jumlahAnggota=Number(dataArisan.jumlahAnggota)||Object.keys(dataArisan.anggota||{}).length;totalKas=iuran*jumlahAnggota;jasa=Number(dataArisan.jasaKas)||0;diterima=Math.max(0,totalKas-jasa);const transaksiRef=push(ref(db,`/arisan_transaksi/${arisanId}/${periode}`));lastTransaksiKey=transaksiRef.key;await set(transaksiRef,{tanggal:new Date().toISOString(),pemenangId,totalKas,jasaRp:jasa,diterima,metode:"rolet",periode,namaPemenang:pemenang.nama||pemenangId});
+async function prosesPemenang(){try{const iuran=Number(dataArisan.iuran)||0;const jumlahAnggota=Number(dataArisan.jumlahAnggota)||Object.keys(dataArisan.anggota||{}).length;totalKas=iuran*jumlahAnggota;jasa=Number(dataArisan.jasaKas)||0;diterima=Math.max(0,totalKas-jasa);
+  const transaksiRef = push(ref(db,`/arisan_transaksi/${arisanId}/${periode}`));
+lastTransaksiKey = transaksiRef.key;
+await set(transaksiRef,{
+  tanggal: Date.now(), // pakai angka, bukan ISO biar konsisten sama data lama kamu
+  pemenangId,
+  totalKas, jasaRp:jasa, diterima,
+  metode:"rolet", periode,
+  namaPemenang: pemenang.nama||pemenangId
+});
   await update(ref(db,`/arisan/${arisanId}/anggota/${pemenangId}`),{sudahDapat:true, periodeDapat:periode});
   const anggotaIds=Object.keys(dataArisan.anggota||{});const sudahMenang=anggotaIds.filter(id=>{if(id===pemenangId)return true;return dataArisan.anggota?.[id]?.sudahDapat===true}).length;if(sudahMenang>=anggotaIds.length){await update(ref(db,`/arisan/${arisanId}`),{status:"selesai",periodeSekarang:periode})}else{await update(ref(db,`/arisan/${arisanId}`),{periodeSekarang:periode+1})}try{const logRef=push(ref(db,"/log_aktivitas"));await set(logRef,{waktu:new Date().toISOString(),aksi:"KOCOK_ARISAN",arisanId,periode,pemenang:pemenang.nama||pemenangId,nominal:diterima})}catch(e){}tampilkanPemenang();}catch(error){console.error(error);tampilError("Pemenang sudah ditentukan tetapi gagal simpan: "+error.message)}}
 function tampilkanPemenang(){roletSedangBerjalan=false;areaKocokEl.style.display="none";winnerEl.classList.add("show");namaPemenangEl.textContent=pemenang.nama||pemenangId;nominalEl.textContent=rupiah(diterima);detailUangEl.innerHTML=`Total iuran: <b>${rupiah(totalKas)}</b><br>Jasa kas: <b>${rupiah(jasa)}</b><br>Diterima: <b>${rupiah(diterima)}</b>`;btnSound.style.display="none";document.getElementById("btnVolMin").style.display="none";document.getElementById("btnVolPlus").style.display="none";document.getElementById("txtVolume").style.display="none";playMenang();confetti();const hp=pemenang.hp||pemenang.telepon||pemenang.noTelepon||"";const nomor=String(hp).replace(/\D/g,"").replace(/^0/,"62");const pesan=`🎉 *PEMENANG ARISAN KOPERASI ARFA*\n\nNama: ${pemenang.nama||pemenangId}\nArisan: ${dataArisan.nama||"-"}\nPutaran: ${periode}\n\nTotal Iuran: ${rupiah(totalKas)}\nJasa Kas: ${rupiah(jasa)}\nDiterima: ${rupiah(diterima)}\n\nSelamat kepada pemenang! 🎊\n\n_Koperasi ARFA Sejahtera_`;btnWA.onclick=()=>{const url=nomor?`https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`:`https://wa.me/?text=${encodeURIComponent(pesan)}`;window.open(url,"_blank")};btnPrint.onclick=()=>cetakNota();}
