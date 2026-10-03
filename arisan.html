@@ -15,7 +15,7 @@ header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));col
 .container{padding:15px;max-width:900px;margin:0 auto}
 .card{background:var(--card);padding:15px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 5px rgba(0,0,0,.08)}
 h2{margin-bottom:12px;font-size:16px;color:var(--primary-dark)} h3{margin-top:15px;font-size:14px}
-.form-group{margin-bottom:12px} label{display:block;margin-bottom:5px;font-weight:600;font-size:12px}
+.form-group{margin-bottom:12px} label{display:block;margin-bottom:5px;font-weight:600;font-size:10px}
 input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none}
 input:focus,select:focus{border-color:var(--primary)}
 button{padding:10px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:600} button:disabled{opacity:.6;cursor:not-allowed}
@@ -33,10 +33,10 @@ button{padding:10px 14px;border:none;border-radius:8px;cursor:pointer;font-weigh
 tr.lunas{background:#dcfce7}
 .btn-kecil{padding:5px 8px;font-size:11px}.btn-wa{background:#25D366;color:#fff;padding:4px 7px;border-radius:20px;font-size:10px;display:inline-flex;align-items:center;gap:3px;text-decoration:none}
 .empty{text-align:center;color:#888;padding:15px}
-.icon-kunci-samar{font-size:18px;color:#9ca3af;background:#f3f4f6;padding:6px;border-radius:50%;cursor:pointer}.icon-kunci-samar:hover{background:#dbeafe;color:var(--primary)}
+.icon-kunci-samar{font-size:10px;color:#f3f4f6;background:#f3f4f6;padding:6px;border-radius:50%;cursor:pointer}.icon-kunci-samar:hover{background:#dbeafe;color:var(--primary)}
 .info-rolet{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:12px;margin-top:12px;font-size:11px}
 .tab-menu{display:flex;gap:6px;margin:12px 0;background:#f1f5f9;padding:4px;border-radius:10px}
-.tab-menu button{flex:1;padding:8px;border-radius:8px;font-size:11px}
+.tab-menu button{flex:1;padding:3px;border-radius:8px;font-size:10px}
 .tab-menu button.active{background:var(--primary);color:#fff}
 .tab-menu button.inactive{background:#fff;color:#64748b}
 @media(max-width:600px){.grid-2{grid-template-columns:1fr}}
@@ -49,14 +49,12 @@ tr.lunas{background:#dcfce7}
     <h2>+ Buat Arisan Baru</h2>
     <div class="form-group"><label>Nama Arisan</label><input type="text" id="namaArisan" placeholder="Contoh: Arisan Ibu-ibu"></div>
     <div class="grid-2"><div class="form-group"><label>Jumlah Iuran</label><input type="text" inputmode="numeric" id="iuran" placeholder="100,000" autocomplete="off"></div><div class="form-group"><label>Periode</label><select id="periode"><option value="mingguan">Mingguan</option><option value="bulanan">Bulanan</option></select></div></div>
-    <div class="form-group"><label>Tambah Anggota</label><input type="text" id="inputNamaAnggota" placeholder="Nama Anggota" style="margin-bottom:6px"><input type="text" id="inputHpAnggota" placeholder="No HP 08xxx"><button class="btn-success" style="margin:10px 0" onclick="tambahAnggotaManual()">+ Tambah Anggota</button><div id="listAnggotaPreview" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+    <div class="form-group"><label>Tambah Anggota</label><input type="text" id="inputNamaAnggota" placeholder="Nama Anggota" style="margin-bottom:6px"><input type="text" id="inputHpAnggota" placeholder="No HP 08xxx"><button class="btn-success" style="margin:4px;padding:8px;text-align:center; 0" onclick="tambahAnggotaManual()">+ Tambah Anggota</button><div id="listAnggotaPreview" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
     <button class="btn-primary" id="btnBuatArisan">Buat Arisan</button>
   </div>
   <div class="card">
-   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2>Daftar Arisan</h2>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2>Daftar Arisan</h2>
 <div style="display:flex;gap:6px">
-<button class="btn-success btn-kecil" onclick="backupData()">💾 Backup</button>
-<button class="btn-warning btn-kecil" onclick="document.getElementById('fileRestore').click()">📥 Restore</button>
 <input type="file" id="fileRestore" hidden accept=".json" onchange="restoreData(event)">
 </div>
 </div>
@@ -76,7 +74,7 @@ tr.lunas{background:#dcfce7}
 <!-- TAB 1 ANGGOTA -->
 <div id="tabAnggota">
   <div id="formTambahAnggota" style="background:#f8fafc;border:1px dashed #cbd5e1;padding:10px;border-radius:10px;margin-bottom:10px;display:none">
-    <div style="font-size:11px;font-weight:700;margin-bottom:6px;color:var(--primary-dark)">+ Tambah Anggota Baru (hanya sebelum kocok pertama)</div>
+    <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:var(--primary-dark)">+ Tambah Anggota Baru (hanya sebelum kocok pertama)</div>
     <div class="grid-2"><input type="text" id="tambahNamaDetail" placeholder="Nama baru"><input type="text" id="tambahHpDetail" placeholder="No HP 08xxx"></div>
     <button class="btn-success btn-kecil" style="width:100%;margin-top:6px" onclick="tambahAnggotaDiDetail()">+ Tambah ke Arisan Ini</button>
   </div>
@@ -87,13 +85,13 @@ tr.lunas{background:#dcfce7}
 <div id="tabSetoran" style="display:none">
   <h3>Input Setoran Putaran <span id="txtPeriodeSekarang"></span></h3>
   <div style="overflow-x:auto"><table class="tabel-setor"><thead><tr><th width="40">Lunas</th><th>Nama</th><th>No HP</th><th>Jumlah</th></tr></thead><tbody id="tabelSetoran"></tbody></table></div>
-  <div id="totalSetoranBox" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-top:10px;display:flex;justify-content:space-between;gap:10px;font-size:12px">
+  <div id="totalSetoranBox" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;justify-content:space-between;gap:10px;font-size:12px">
     <div>Lunas: <b id="txtTotalLunas" style="color:var(--success)">0 orang</b></div>
     <div>Belum: <b id="txtTotalBelum" style="color:var(--danger)">0 orang</b></div>
     <div>Terkumpul: <b id="txtTotalUang" style="color:var(--primary-dark)">Rp 0</b></div>
   </div>
-  <div class="grid-2" style="margin-top:10px"><div class="form-group"><label>Potongan Jasa Kas Rp</label><input type="number" id="inputJasa" value="0" min="0"></div><div class="form-group"><label>Total Diterima</label><input type="text" id="inputDiterima" readonly style="background:#f3f4f6;font-weight:700;color:var(--success)"></div></div>
-  <div style="margin-top:12px"><button class="btn-warning" id="btnPutaran" style="width:100%;padding:14px">🎲 Kocok di Halaman Baru</button></div>
+  <div class="grid-2" style="margin-top:8px"><div class="form-group"><label>Potongan Jasa Kas Rp</label><input type="number" id="inputJasa" value="0" min="0"></div><div class="form-group"><label>Total Diterima</label><input type="text" id="inputDiterima" readonly style="background:#f3f4f6;font-weight:700;color:var(--success)"></div></div>
+  <div style="margin-top:8px"><button class="btn-warning" id="btnPutaran" style="width:100%;padding:14px">🎲 Kocok di Halaman Baru</button></div>
   <div class="info-rolet"><b>Kocok di Halaman Baru</b><br>Tekan tombol kocok, animasi rolet dibuka penuh di window baru.</div>
 </div>
 
@@ -102,7 +100,7 @@ tr.lunas{background:#dcfce7}
   <h3>Riwayat Pemenang</h3><div class="list" id="listRiwayat"></div>
 </div>
 
-<button class="btn-danger btn-kecil" style="width:100%;margin-top:12px" id="btnHapusArisan">🗑️ Hapus Arisan Ini</button>
+<button class="btn-danger btn-kecil" style="width:100%;margin-top:8px" id="btnHapusArisan">🗑️ Hapus Arisan Ini</button>
 </div></div>
 
 <div id="modalEditAnggota" class="modal"><div class="modal-content"><h3>Edit Anggota</h3><input type="hidden" id="editAnggotaId"><div class="form-group"><label>Nama</label><input type="text" id="editNamaAnggota"></div><div class="form-group"><label>No HP</label><input type="text" id="editHpAnggota"></div><div class="grid-2"><button class="btn-primary" onclick="simpanEditAnggota()">Simpan</button><button class="btn-danger" onclick="tutupModalEditAnggota()">Batal</button></div></div></div>
@@ -143,7 +141,33 @@ function renderPreview(){ const d=document.getElementById("listAnggotaPreview");
 window.hapusPreview=function(i){ anggotaSementara.splice(i,1); renderPreview(); };
 onValue(ref(db,"arisan"),s=>{ dataArisan=s.val()||{}; renderList(); if(arisanAktifId && dataArisan[arisanAktifId]){ const modal=document.getElementById("modalDetail"); if(modal.classList.contains("show")) bukaDetail(arisanAktifId); } });
 document.getElementById("filterStatus").addEventListener("change",e=>{ filterSaatIni=e.target.value; renderList(); });
-function renderList(){ const list=document.getElementById("listArisan"); let data=Object.entries(dataArisan); if(filterSaatIni!=="semua") data=data.filter(([id,a])=>a.status===filterSaatIni); data.sort((a,b)=>Number(b[1].tanggalBuat||0)-Number(a[1].tanggalBuat||0)); if(data.length===0){ list.innerHTML=`<div class="empty">Tidak ada arisan</div>`; return; } list.innerHTML=""; data.forEach(([id,a])=>{ list.innerHTML+=`<div class="item"><div class="item-top"><div><b>${escapeHTML(a.nama)}</b><br><small>${escapeHTML(a.periode)} - ${a.jumlahAnggota} Anggota</small></div><div class="badge ${a.status}">${(a.status||"aktif").toUpperCase()}</div></div><div>Iuran: <b>${rupiah(a.iuran)}</b></div><div style="font-size:11px;color:#666">Putaran: ${a.periodeSekarang||1}/${a.jumlahAnggota}</div><div class="grid-2" style="margin-top:8px"><button class="btn-primary" onclick="bukaDetail('${id}')">Kelola</button><button class="btn-danger btn-kecil" onclick="hapusList('${id}','${escapeJS(a.nama)}')">🗑️ Hapus</button></div></div>`; }); }
+function renderList(){ 
+  const list=document.getElementById("listArisan"); 
+  let data=Object.entries(dataArisan); 
+  if(filterSaatIni!=="semua") data=data.filter(([id,a])=>a.status===filterSaatIni); 
+  data.sort((a,b)=>Number(b[1].tanggalBuat||0)-Number(a[1].tanggalBuat||0)); 
+  if(data.length===0){ 
+    list.innerHTML=`<div class="empty">Tidak ada arisan</div>`; 
+    return;
+  } 
+  list.innerHTML=""; 
+  data.forEach(([id,a])=>{ list.innerHTML+=`<div class="item">
+    <div class="item-top">
+    <div><b>${escapeHTML(a.nama)}</b><br><small>${escapeHTML(a.periode)} - ${a.jumlahAnggota} Anggota</small>
+    </div>
+    <div class="badge ${a.status}">${(a.status||"aktif").toUpperCase()}
+    </div>
+    </div>
+    <div>Iuran: <b>${rupiah(a.iuran)}</b></div>
+    <div style="font-size:11px;color:#666">Putaran: ${a.periodeSekarang||1}/${a.jumlahAnggota}</div>
+    <div class="grid-2" style="margin-top:8px">
+  <button class="btn-primary" onclick="bukaDetail('${id}')">Kelola</button>
+    <button class="btn-success btn-kecil" onclick="backupData()">💾 Backup</button>
+<button class="btn-warning btn-kecil" onclick="document.getElementById('fileRestore').click()">📥 Restore</button>
+
+  <button class="btn-danger btn-kecil" onclick="hapusList('${id}','${escapeJS(a.nama)}')">🗑️ Hapus</button>
+  </div>
+  </div>`; }); }
 document.getElementById("btnBuatArisan").onclick=async()=>{ const nama=document.getElementById("namaArisan").value.trim(); const iuran=getIuranAsli(); const periode=document.getElementById("periode").value; if(!nama||!iuran||iuran<1000||anggotaSementara.length<2){ alert("Lengkapi data minimal 2 anggota"); return; } const btn=document.getElementById("btnBuatArisan"); btn.disabled=true; btn.innerText="Menyimpan..."; try{ const baru=push(ref(db,"arisan")); const obj={}; anggotaSementara.forEach(a=>{ obj[a.id]={...a,sudahDapat:false,totalSetor:0,kunciTerakhir:false}; }); await set(baru,{nama,iuran,periode,status:"aktif",jumlahAnggota:anggotaSementara.length,anggota:obj,periodeSekarang:1,tanggalBuat:Date.now()}); simpanLog("BUAT_ARISAN",{namaArisan:nama,iuran}); showToast("Arisan dibuat"); document.getElementById("namaArisan").value=""; document.getElementById("iuran").value=""; anggotaSementara=[]; renderPreview(); }catch(e){ alert(e.message); }finally{ btn.disabled=false; btn.innerText="Buat Arisan"; } };
 window.bukaDetail=async function(id){ arisanAktifId=id; const a=dataArisan[id]; if(!a) return; document.getElementById("detailJudul").innerText=a.nama; document.getElementById("txtPeriodeSekarang").innerText="P"+(a.periodeSekarang||1); const belum=Object.entries(a.anggota||{}).filter(([k,v])=>!v.sudahDapat).length; document.getElementById("detailInfo").innerHTML=`<p><b>Putaran:</b> ${a.periodeSekarang||1}/${a.jumlahAnggota}</p><p><b>Iuran:</b> ${rupiah(a.iuran)}</p><p><b>Sisa:</b> ${belum} orang</p>`; document.getElementById("countAnggota").innerText=Object.keys(a.anggota||{}).length; renderAnggota(a); await renderSetoran(a); await loadRiwayat(id); hitungDiterima(); document.getElementById("inputJasa").oninput=hitungDiterima; cekBisaTambahAnggota(a); gantiTab('anggota'); document.getElementById("modalDetail").classList.add("show"); };
 window.tutupModal=function(){ document.getElementById("modalDetail").classList.remove("show"); };
