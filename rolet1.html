@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Roda Arisan ARFA - 12 DETIK FIX WINNER</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'Poppins',sans-serif;background:#f1f5f9;overflow-x:hidden}
+.container{max-width:480px;margin:0 auto;padding:10px 12px;text-align:center;width:100%}
+.card{background:#fff;border-radius:24px;padding:14px 12px 18px;box-shadow:0 10px 40px rgba(0,0,0,.12);position:relative;overflow:hidden}
+.card.disco::before{content:"";position:absolute;inset:-5px;background:conic-gradient(from 0deg,#ff0080,#ff8a00,#ffeb00,#00ff88,#00cfff,#8b5cf6,#ff0080);filter:blur(18px);opacity:.6;animation:rot.8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.wheel-box{position:relative;width:min(84vw,340px);height:min(84vw,340px);margin:14px auto;z-index:1}
+#wheelCanvas{width:100%;height:100%;border-radius:50%;border:5px solid #fff;box-shadow:0 0 0 6px #2563eb;transition:transform 12s cubic-bezier(0.15,0,0.15,1);display:block}
+.pin{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:28px solid #dc2626;z-index:5;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.btn{width:100%;padding:14px;border:none;border-radius:14px;font-weight:800;cursor:pointer;z-index:1;position:relative;font-family:'Poppins',sans-serif}
+.btn-spin{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:17px}
+.btn-batal{background:#f59e0b;color:#fff;margin-top:10px;font-size:13px}
+.loading{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:99;font-weight:700;color:#2563eb}
+.confetti{position:fixed;width:10px;height:10px;top:-10px;z-index:9999;border-radius:2px}
+.legend{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;font-size:10px;color:#64748b;z-index:1;position:relative}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* === FIX TAMPILAN PEMENANG === */
+.winner{position:absolute;inset:0;background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;border-radius:24px}
+.winner.show{display:flex;animation:pop.6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.winner-badge{font-size:12px;background:#dcfce7;color:#15803d;padding:6px 16px;border-radius:20px;font-weight:800;letter-spacing:.5px}
+.winner-name{font-size:38px;font-weight:800;color:#0f172a;line-height:1;margin:12px 0 4px;text-shadow:0 2px 10px rgba(0,0,0,.1)}
+.winner-uang{font-size:15px;font-weight:700;color:#16a34a;background:#f0fdf4;padding:8px 16px;border-radius:12px;margin-top:6px}
+.winner-icon{font-size:64px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+<div id="loading" class="loading">Memuat roda...</div>
+<div class="container">
+<div id="card" class="card">
+<h3 id="judul" style="margin:0;color:#1e3a8a;z-index:1;position:relative;font-size:22px">RODA ARISAN</h3>
+<div id="putaran" style="background:#eff6ff;color:#2563eb;display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;margin-top:6px;z-index:1;position:relative;font-weight:700">-</div>
+<div class="wheel-box"><div class="pin"></div><canvas id="wheelCanvas" width="620" height="620"></canvas></div>
+<div class="legend"><span><span class="dot" style="background:#3b82f6"></span> Belum</span><span><span class="dot" style="background:#9ca3af"></span> Sudah dapat</span></div>
+<div id="status" style="font-size:12px;color:#64748b;z-index:1;position:relative;margin-top:10px;font-weight:600">Siap...</div>
+<button id="btnSpin" class="btn btn-spin" style="margin-top:12px">🎡 PUTAR RODA 12 DETIK</button>
+<div id="error" style="display:none;background:#fef2f2;color:#b91c1c;padding:10px;border-radius:10px;margin-top:10px;font-size:11px;z-index:1;position:relative"></div>
+
+<!-- MODAL PEMENANG BARU -->
+<div id="winner" class="winner">
+<div class="winner-icon">🏆</div>
+<div class="winner-badge" id="labelMenang">PEMENANG PUTARAN</div>
+<div class="winner-name" id="namaPemenang">-</div>
+<div class="winner-uang" id="uang">-</div>
+<button id="btnUlang" class="btn btn-batal" style="width:auto;padding:10px 18px;margin-top:18px">🔄 Batalkan & Putar Ulang</button>
+<button class="btn" style="width:auto;background:#e2e8f0;margin-top:8px;font-size:12px;padding:10px 18px" onclick="window.close()">✕ Tutup</button>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyDd0s73-qW2uiOlBWR-afybFZzMafCHeSo",authDomain:"arfa-c7dee.firebaseapp.com",databaseURL:"https://arfa-c7dee-default-rtdb.firebaseio.com",projectId:"arfa-c7dee"};
+const app=initializeApp(firebaseConfig); const db=getDatabase(app);
+const arisanId=new URLSearchParams(window.location.search).get("id");
+
+let dataArisan,periode,daftar=[],daftarKocok=[],currentDeg=0,pemenangId,audioCtx,tickTimer=null;
+const canvas=document.getElementById("wheelCanvas"), ctx=canvas.getContext("2d");
+const colors=["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4","#ec4899","#f97316","#14b8a6","#f43f5e"];
+const DURASI = 12000;
+
+function rupiah(n){return "Rp "+Number(n).toLocaleString("id-ID")}
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playTick(){if(!audioCtx)return;try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="square";o.frequency.value=700+Math.random()*300;g.gain.setValueAtTime(0.25,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.06);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.06);}catch(e){}}
+function playWin(){[523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>{if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.setValueAtTime(0.5,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.5);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.5);},i*130));}
+
+function drawWheel(list){
+  const n=list.length; if(n===0)return;
+  const cx=310,cy=310,r=280; const anglePer=(2*Math.PI)/n;
+  ctx.clearRect(0,0,620,620);
+  let fontSize=22; if(n>6) fontSize=18; if(n>10) fontSize=14; if(n>16) fontSize=11;
+  list.forEach((id,i)=>{
+    const ag=dataArisan.anggota[id]; const sudah=ag?.sudahDapat;
+    const start=i*anglePer - Math.PI/2, end=start+anglePer;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();
+    ctx.fillStyle=sudah?"#9ca3af":colors[i%colors.length]; ctx.globalAlpha=sudah?0.45:1; ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle="#fff";ctx.lineWidth=n>15?2:3;ctx.stroke();
+    let nama=(ag?.nama||"").trim(); if(nama.length>10) nama=nama.substring(0,10);
+    const midAngle=start+anglePer/2; const tr=r*(n>15?0.50:n>10?0.55:0.60);
+    const tx=cx+Math.cos(midAngle)*tr; const ty=cy+Math.sin(midAngle)*tr;
+    ctx.save();ctx.translate(tx,ty); let rot=midAngle; if(rot>Math.PI/2 && rot<Math.PI*1.5) rot+=Math.PI;
+    ctx.rotate(rot); ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillStyle=sudah?"#374151":"#fff"; ctx.font=`bold ${fontSize}px Poppins`;
+    if(!sudah){ctx.shadowColor="rgba(0,0,0,.4)";ctx.shadowBlur=3;}
+    ctx.fillText(nama,0,0); ctx.restore();
+  });
+  ctx.beginPath();ctx.arc(cx,cy,54,0,Math.PI*2);ctx.fillStyle="#0f172a";ctx.fill();
+  ctx.fillStyle="#fff";ctx.font="bold 19px Poppins";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("ARFA",cx,cy+3);
+}
+
+function showWinnerUI(nama,total,p){
+  document.getElementById("winner").classList.add("show");
+  document.getElementById("labelMenang").innerText=`PEMENANG PUTARAN ${p} - SAH`;
+  document.getElementById("namaPemenang").innerText=nama;
+  document.getElementById("uang").innerText=rupiah(total);
+  document.getElementById("status").innerText=`🏆 Pemenang P${p}: ${nama} - ${rupiah(total)}`;
+  document.getElementById("btnSpin").style.display="none";
+}
+function hideWinnerUI(){
+  document.getElementById("winner").classList.remove("show");
+  document.getElementById("btnSpin").style.display="block";
+  document.getElementById("btnSpin").disabled=false;
+  document.getElementById("btnSpin").innerText="🎡 PUTAR ULANG P"+periode;
+}
+function confetti(){for(let i=0;i<120;i++){const d=document.createElement("div");d.className="confetti";d.style.left=Math.random()*100+"vw";d.style.background=`hsl(${Math.random()*360},100%,50%)`;document.body.appendChild(d);d.animate([{transform:"translateY(0) rotate(0deg)",opacity:1},{transform:`translateY(110vh) rotate(${720}deg)`,opacity:0}],{duration:2500+Math.random()*2000}).onfinish=()=>d.remove();}}
+
+async function load(){
+  if(!arisanId) throw new Error("ID arisan tidak ada di URL");
+  const snap=await get(ref(db,`/arisan/${arisanId}`)); if(!snap.exists())throw new Error("Arisan tidak ada");
+  dataArisan=snap.val(); periode=Number(dataArisan.periodeSekarang)||1;
+  document.getElementById("judul").innerText=dataArisan.nama||"RODA ARISAN";
+  document.getElementById("putaran").innerText="Putaran "+periode;
+  const snapTrans = await get(ref(db,`/arisan_transaksi/${arisanId}/${periode}`));
+  if(snapTrans.exists()){
+    const trans=Object.values(snapTrans.val())[0]; pemenangId=trans.pemenangId;
+    daftar=Object.keys(dataArisan.anggota||{}); drawWheel(daftar);
+    const idx=daftar.indexOf(pemenangId); const anglePer=360/daftar.length;
+    currentDeg=360-(idx*anglePer+anglePer/2); canvas.style.transition="none"; canvas.style.transform=`rotate(${currentDeg}deg)`;
+    setTimeout(()=>{canvas.style.transition=`transform ${DURASI/1000}s cubic-bezier(0.15,0,0.15,1)`},100);
+    showWinnerUI(trans.namaPemenang,trans.totalKas||0,periode); return;
+  }
+  const semua=Object.entries(dataArisan.anggota||{}); const belum=semua.filter(([k,v])=>!v.sudahDapat);
+  daftar=semua.map(([k])=>k); const kunci=belum.find(([k,v])=>v.kunciTerakhir);
+  daftarKocok=kunci&&belum.length>1?belum.filter(([k])=>k!==kunci[0]).map(([k])=>k):belum.map(([k])=>k);
+  if(daftarKocok.length===0)throw new Error("Arisan selesai 🏆"); if(daftar.length===0)throw new Error("Belum ada anggota");
+  const s=await get(ref(db,`/arisan_setoran/${arisanId}/${periode}`)); const setor=s.val()||{};
+  const belumLunas=belum.filter(([k])=>!setor[k]); if(belumLunas.length>0)throw new Error("Belum lunas: "+belumLunas.map(([k,v])=>v.nama).join(", "));
+  drawWheel(daftar); document.getElementById("status").innerText=`Siap! ${daftar.length} total • ${daftarKocok.length} bisa menang`;
+}
+
+document.getElementById("btnSpin").onclick=async()=>{
+  if(daftarKocok.length===0)return; initAudio(); if(audioCtx.state==="suspended")await audioCtx.resume();
+  document.getElementById("card").classList.add("disco"); document.getElementById("btnSpin").disabled=true;
+  document.getElementById("status").innerText="🎡 Memutar 12 detik...";
+  tickTimer=setInterval(playTick,85);
+  pemenangId=daftarKocok[Math.floor(Math.random()*daftarKocok.length)];
+  const idx=daftar.indexOf(pemenangId); const anglePer=360/daftar.length;
+  const target=360-(idx*anglePer+anglePer/2); const jitter=Math.random()*8-4;
+  currentDeg+=360*14 + (target+jitter) - (currentDeg%360);
+  canvas.style.transform=`rotate(${currentDeg}deg)`;
+  setTimeout(async()=>{
+    clearInterval(tickTimer); playWin(); confetti(); document.getElementById("card").classList.remove("disco");
+    const iuran=Number(dataArisan.iuran)||0, jml=Object.keys(dataArisan.anggota||{}).length, total=iuran*jml;
+    const tRef=push(ref(db,`/arisan_transaksi/${arisanId}/${periode}`));
+    await set(tRef,{tanggal:Date.now(),pemenangId,namaPemenang:dataArisan.anggota[pemenangId].nama,totalKas:total,diterima:total,periode});
+    await update(ref(db,`/arisan/${arisanId}/anggota/${pemenangId}`),{sudahDapat:true,periodeDapat:periode});
+    const semua=Object.keys(dataArisan.anggota||{}).length, menang=Object.values(dataArisan.anggota||{}).filter(a=>a.sudahDapat).length+1;
+    if(menang>=semua)await update(ref(db,`/arisan/${arisanId}`),{status:"selesai",periodeSekarang:periode}); else await update(ref(db,`/arisan/${arisanId}`),{periodeSekarang:periode+1});
+    showWinnerUI(dataArisan.anggota[pemenangId].nama,total,periode);
+  }, DURASI + 300);
+};
+
+document.getElementById("btnUlang").onclick=async()=>{
+  if(!confirm(`Batalkan pemenang ${dataArisan.anggota[pemenangId]?.nama} di P${periode}?`))return;
+  document.getElementById("status").innerText="⏳ Membatalkan..."; document.getElementById("btnUlang").disabled=true;
+  try{
+    const snapTrans=await get(ref(db,`/arisan_transaksi/${arisanId}/${periode}`));
+    if(snapTrans.exists()){for(const k of Object.keys(snapTrans.val())){await set(ref(db,`/arisan_transaksi/${arisanId}/${periode}/${k}`),null);}await set(ref(db,`/arisan_transaksi/${arisanId}/${periode}`),null);}
+    await update(ref(db,`/arisan/${arisanId}/anggota/${pemenangId}`),{sudahDapat:false,periodeDapat:null});
+    await update(ref(db,`/arisan/${arisanId}`),{status:"aktif",periodeSekarang:periode});
+    const snapFresh=await get(ref(db,`/arisan/${arisanId}`)); dataArisan=snapFresh.val();
+    const semua=Object.entries(dataArisan.anggota||{}); const belum=semua.filter(([k,v])=>!v.sudahDapat);
+    daftar=semua.map(([k])=>k); const kunci=belum.find(([k,v])=>v.kunciTerakhir);
+    daftarKocok=kunci&&belum.length>1?belum.filter(([k])=>k!==kunci[0]).map(([k])=>k):belum.map(([k])=>k);
+    drawWheel(daftar); hideWinnerUI(); document.getElementById("btnUlang").disabled=false;
+  }catch(e){alert("Gagal: "+e.message);document.getElementById("btnUlang").disabled=false;}
+};
+
+load().then(()=>{document.getElementById("loading").style.display="none";}).catch(e=>{document.getElementById("loading").style.display="none";document.getElementById("error").style.display="block";document.getElementById("error").innerText=e.message;});
+</script>
+</body>
+</html>
