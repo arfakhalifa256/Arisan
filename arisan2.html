@@ -184,7 +184,7 @@ window.bukaDetail=async function(id){
   document.getElementById("modalDetail").classList.add("show");
 };
 window.tutupModal=function(){ document.getElementById("modalDetail").classList.remove("show"); };
-window.bukaHalamanKunci=function(){ if(!arisanAktifId) return; window.location=`arisan-kunci.html?id=${encodeURIComponent(arisanAktifId)}`; };
+window.bukaHalamanKunci=function(){ if(!arisanAktifId) return; window.location=`arisan-kunci1.html?id=${encodeURIComponent(arisanAktifId)}`; };
 function renderAnggota(a){ const tbody=document.getElementById("tbodyAnggota"); tbody.innerHTML=""; Object.entries(a.anggota||{}).forEach(([id,ag])=>{ let st=""; if(ag.sudahDapat){ const p=ag.periodeDapat||ag.putaranDapat||"?"; st=`<span style="color:var(--success);font-weight:700">🏆 Sudah P${p}</span>`; }else{ st=`<span style="color:var(--warning)">Belum</span>`; } const wa=ag.hp&&nomorWAValid(ag.hp)? `<a href="${buatLinkWA(ag.hp)}" target="_blank" class="btn-wa">WA</a>` : ""; tbody.innerHTML+=`<tr><td>${escapeHTML(ag.nama)}</td><td>${escapeHTML(ag.hp||"-")} ${wa}</td><td>${st}</td><td><button class="btn-info btn-kecil" onclick="bukaEdit('${id}')">✏️</button></td></tr>`; }); }
 window.bukaEdit=function(id){ const ag=dataArisan[arisanAktifId].anggota[id]; document.getElementById("editAnggotaId").value=id; document.getElementById("editNamaAnggota").value=ag.nama; document.getElementById("editHpAnggota").value=ag.hp||""; document.getElementById("modalEditAnggota").classList.add("show"); };
 window.tutupModalEditAnggota=function(){ document.getElementById("modalEditAnggota").classList.remove("show"); };
