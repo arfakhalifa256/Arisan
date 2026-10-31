@@ -33,7 +33,6 @@ button{padding:10px 14px;border:none;border-radius:8px;cursor:pointer;font-weigh
 tr.lunas{background:#dcfce7}
 .btn-kecil{padding:5px 8px;font-size:11px}.btn-wa{background:#25D366;color:#fff;padding:4px 7px;border-radius:20px;font-size:10px;display:inline-flex;align-items:center;gap:3px;text-decoration:none}
 .empty{text-align:center;color:#888;padding:15px}
-.icon-kunci-samar{font-size:10px;color:#f3f4f6;background:#f3f4f6;padding:6px;border-radius:50%;cursor:pointer}.icon-kunci-samar:hover{background:#dbeafe;color:var(--primary)}
 .info-rolet{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:10px;padding:12px;margin-top:12px;font-size:11px}
 .tab-menu{display:flex;gap:6px;margin:12px 0;background:#f1f5f9;padding:4px;border-radius:10px}
 .tab-menu button{flex:1;padding:8px;border-radius:8px;font-size:11px}
@@ -64,7 +63,11 @@ tr.lunas{background:#dcfce7}
 </div>
 
 <div id="modalDetail" class="modal"><div class="modal-content">
-<div style="display:flex;justify-content:space-between;align-items:center"><h2 id="detailJudul">Detail Arisan</h2><div style="display:flex;gap:6px;align-items:center"><span onclick="bukaHalamanKunci()" class="material-icons icon-kunci-samar" title="Kelola Kunci">vpn_key</span><span onclick="tutupModal()" class="material-icons" style="cursor:pointer">close</span></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 id="detailJudul">Detail Arisan</h2><div style="display:flex;gap:6px;align-items:center">
+
+  <span onclick="tutupModal()" class="material-icons" style="cursor:pointer">close</span>
+</div>
+</div>
 <div id="detailInfo" style="margin-top:8px"></div>
 
 <div class="tab-menu">
