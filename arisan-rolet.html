@@ -37,7 +37,7 @@
 <div id="putaran" style="background:#eff6ff;color:#2563eb;display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;margin-top:6px;z-index:1;position:relative;font-weight:700">-</div>
 <div class="wheel-box"><div class="pin"></div><canvas id="wheelCanvas" width="620" height="620"></canvas></div>
 <div id="status" style="font-size:12px;color:#64748b;z-index:1;position:relative;margin-top:10px;font-weight:600">Siap...</div>
-<button id="btnSpin" class="btn btn-spin">🎡 PUTAR 10 DETIK</button>
+<button id="btnSpin" class="btn btn-spin">🎡 PUTAR 30 DETIK</button>
 </div>
 </div>
 
@@ -71,7 +71,7 @@ const app=initializeApp(firebaseConfig); const db=getDatabase(app);
 const arisanId=new URLSearchParams(window.location.search).get("id");
 let dataArisan,periode,daftar=[],daftarKocok=[],currentDeg=0,pemenangId,paksaAktif=null, lastWinData=null;
 const canvas=document.getElementById("wheelCanvas"), ctx=canvas.getContext("2d");
-const DURATION_MS=10000;
+const DURATION_MS=30000;
 const colors=["#3b82f6","#10b981","#8b5cf6","#06b6d4","#f59e0b","#ef4444","#ec4899","#14b8a6"];
 let audioCtx=null;
 function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }
@@ -186,7 +186,7 @@ document.getElementById("btnSpin").onclick=async()=>{
   document.getElementById("btnSpin").disabled=true;
   if(paksaAktif) pemenangId=paksaAktif[0];
   else { let last=localStorage.getItem("lastWinner_"+arisanId); let t=0; do{ pemenangId=daftarKocok[Math.floor(Math.random()*daftarKocok.length)]; t++; }while(pemenangId===last&&daftarKocok.length>1&&t<20); localStorage.setItem("lastWinner_"+arisanId,pemenangId); }
-  const idx=daftar.indexOf(pemenangId), ap=360/daftar.length, center=idx*ap+ap/2, target=(360-center+360)%360, extra=360*12, finalDeg=extra+target;
+  const idx=daftar.indexOf(pemenangId), ap=360/daftar.length, center=idx*ap+ap/2, target=(360-center+360)%360, extra=360*24, finalDeg=extra+target;
   canvas.style.transition='none'; canvas.style.transform=`rotate(${currentDeg%360}deg)`; void canvas.offsetWidth;
   canvas.style.transition=`transform ${DURATION_MS}ms cubic-bezier(0.15,0,0.15,1)`; canvas.style.transform=`rotate(${finalDeg}deg)`; currentDeg=finalDeg;
   document.getElementById("status").innerText=`🎡 Memutar...`;
